@@ -48,7 +48,7 @@ def train_model(model, train_input, train_target,test_input,test_target):
             model.zero_grad()
             loss.backward()
             optimizer.step()
-        print("epoch {}, precision on test set {}".format(e, comppute_nb_errors(model.predict(test_input),test_target)/test_target.size(0)))
+        print("epoch {}, loss {:.3},  precision on test set {:2%}".format(e,loss, comppute_nb_errors(model.predict(test_input),test_target)/test_target.size(0)))
 
 if __name__ == "__main__":
 
