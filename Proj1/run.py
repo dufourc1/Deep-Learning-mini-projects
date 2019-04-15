@@ -10,11 +10,11 @@ input_train, target_train, classes_train, input_test, target_test, classes_test 
 device = 'cuda'
 
 criterion = torch.nn.CrossEntropyLoss()
-model = ResNet(nb_channels=10, kernel_size=1, nb_blocks=20)
+model = ResNet(nb_channels=5, kernel_size=1, nb_blocks=14)
 
 lr, nb_epochs, batch_size = 1, 200, 50
 
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr)
 
 model.to(device)
 criterion.to(device)
