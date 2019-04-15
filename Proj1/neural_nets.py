@@ -20,15 +20,15 @@ import dlc_practical_prologue as prologue
 #input size [1000,1,14,14]
 #one image is then [1,14,14]
 
-class Siamese_net(nn.Module):
+class SiameseNet(nn.Module):
     '''network that will be shared by the two "channels" of the bigger network '''
     def __init__(self):
-        super(Siamese_net, self).__init__()
+        super(SiameseNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
         self.conv2 = nn.Conv2d(32, 32, kernel_size=3)
         self.fc1 = nn.Linear(2* 64, 100)
         self.fc2 = nn.Linear(100, 10)
-        #to combine the ouput into a prediction at the output of the Siamese_net
+        #to combine the ouput into a prediction at the output of the SiameseNet
         self.pooling = nn.Linear(20,2)
 
     def forward(self, x):
@@ -102,6 +102,6 @@ if __name__ == "__main__":
     train_input, train_target, train_classes, test_input, test_target, test_classes = prologue.generate_pair_sets(1000)
 
     #definition of the model, loss and optimizer
-    net = Siamese_net()
+    net = SiameseNet()
     train(net, train_input, train_target, train_classes, nb_epochs = 25, verbose = True)
     print(accuracy(net,test_input,test_target,test_classes))
