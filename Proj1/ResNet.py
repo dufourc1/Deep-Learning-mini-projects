@@ -1,5 +1,5 @@
 import torch
-import torch.functional as F
+import torch.nn.functional as F
 import torch.nn as nn
 
 class ResBlock(nn.Module):
@@ -21,10 +21,10 @@ class ResBlock(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, nb_channels, kernel_size, nb_blocks):
         super(ResNet, self).__init__()
-        self.conv0 = nn.Conv2d(1, nb_channels, kernel_size = 1)
+        self.conv0 = nn.Conv2d(2, nb_channels, kernel_size = 1)
         self.resblocks = nn.Sequential(*(ResBlock(nb_channels, kernel_size) for _ in range(nb_blocks)))
         self.avg = nn.AvgPool2d(kernel_size = 28)
-        self.fc = nn.Linear(nb_channels, 10)
+        self.fc = nn.Linear(nb_channels, 2)
 
     def forward(self, x):
         x = F.relu(self.conv0(x))
