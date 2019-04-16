@@ -85,10 +85,33 @@ def split_channels(input, classes):
 
     return input1,classes1, input2,classes2
 
-def train_two_images(model,train_input,train_target, train_classes, nb_epochs = 25, verbose = True, aux = True):
-    '''
-    train the siamese network based on the input being two images of 14x14
-    '''
+def train_siamese(model,train_input,train_target, train_classes, nb_epochs = 25, verbose = True, aux = True):
+    """    train the siamese network based on the input being two images of 14x14
+    Parameters
+    ----------
+    model : SiameseNet
+        model to train
+    train_input : torch.tensor  [n,2,14,14]
+        input of pairs of images shape
+    train_target : torch.tensor [n]
+        class to predict (1 if digit of first image is bigger than second one)
+    train_classes : torch.tensor [n,2]
+        classes of the actual digits on the two images
+    nb_epochs : int
+        (the default is 25).
+    verbose : bool
+        (the default is True).
+    aux : bool
+        If true train the model with the auxilary loss (the default is True).
+
+    Examples
+    -------
+    >>> train_input, train_target, train_classes,\
+        test_input, test_target, test_classes = prologue.generate_pair_sets(1000)
+    >>> model = SiameseNet()
+    >>> train_siamese(model,train_input,train_target, train_classes, nb_epochs = 75, verbose = False)
+
+    """
     #loss and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(),lr = 0.005)
