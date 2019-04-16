@@ -21,7 +21,7 @@ import dlc_practical_prologue as prologue
 #one image is then [1,14,14]
 
 class SiameseNet(nn.Module):
-    '''Neural net that will be use on both channel of the input'''
+
     def __init__(self):
         super(SiameseNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
@@ -85,7 +85,7 @@ def split_channels(input, classes):
 
     return input1,classes1, input2,classes2
 
-def train_two_images(model,train_input,train_target, train_classes, nb_epochs = 25, verbose = True):
+def train_two_images(model,train_input,train_target, train_classes, nb_epochs = 25, verbose = True, aux = True):
     '''
     train the siamese network based on the input being two images of 14x14
     '''
@@ -101,11 +101,13 @@ def train_two_images(model,train_input,train_target, train_classes, nb_epochs = 
         out1 = model(train_input1)
         out2 = model(train_input2)
 
-        #auxilary loss: learn to detect the images
-        loss_aux = criterion(out1,train_classes1)+criterion(out2,train_classes2)
-        model.zero_grad()
-        loss_aux.backward(retain_graph=True)
-        optimizer.step()
+
+        if aux:
+            #auxilary loss: learn to detect the handwritten digits directly
+            loss_aux = criterion(out1,train_classes1)+criterion(out2,train_classes2)
+            model.zero_grad()
+            loss_aux.backward(retain_graph=True)
+            optimizer.step()
 
 
         #combine the two tensor on top o feach other
@@ -141,7 +143,6 @@ def train_model(model, train_input, train_target, mini_batch_size, verbose = Fal
         if verbose:
             print("Epoch {:3} loss {:7.4}".format(e, loss.data.numpy()))
 
-
 def accuracy(model,input,target):
 
     #perform actual prediction
@@ -149,6 +150,8 @@ def accuracy(model,input,target):
 
     _, pred = torch.max(response,1)
     error = 0
+
+    #compute the percentage of error
     for tried,true in zip(pred,target):
         if tried != true: error+=1
 
