@@ -21,12 +21,12 @@ import dlc_practical_prologue as prologue
 #one image is then [1,14,14]
 
 class SiameseNet(nn.Module):
-    '''network that will be shared by the two "channels" of the bigger network '''
+    '''Neural net that will be use on both channel of the input'''
     def __init__(self):
         super(SiameseNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
-        self.conv2 = nn.Conv2d(32, 32, kernel_size=3)
-        self.fc1 = nn.Linear(2* 64, 100)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
+        self.fc1 = nn.Linear(4*64 , 100)
         self.fc2 = nn.Linear(100, 10)
         #to combine the ouput into a prediction at the output of the SiameseNet
         self.pooling = nn.Linear(20,2)
@@ -34,26 +34,64 @@ class SiameseNet(nn.Module):
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), kernel_size=2))
         x = F.relu(F.max_pool2d(self.conv2(x), kernel_size=2))
-        x = F.relu(self.fc1(x.view(-1, 2* 64)))
+        x = F.relu(self.fc1(x.view(-1, 4* 64)))
         x = self.fc2(x)
         return x
+
+    def predict(self,x):
+        ''' method to predict from the network with original output if the first digit is bigger than the second '''
+        input1 = torch.reshape(x[:,0,:], (x.shape[0],1,14,14))
+        input2 = torch.reshape(x[:,1,:], (x.shape[0],1,14,14))
+        out1 = self.forward(input1)
+        out2 = self.forward(input2)
+
+        #combine the two tensor on top o feach other
+        out = torch.cat((out2, out1), 1)
+        #perform actual prediction
+        response = self.pooling(out)
+
+        return response
+
+class SimpleNet(nn.Module):
+
+    def __init__(self):
+        super(SimpleNet,self).__init__()
+        self.conv1 = nn.Conv2d(2, 32, kernel_size=3)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
+        self.fc1 = nn.Linear(4*64 , 100)
+        self.fc2 = nn.Linear(100, 20)
+        #to combine the ouput into a prediction at the output of the SiameseNet
+        self.fc3 = nn.Linear(20,2)
+
+    def forward(self, x):
+        x = F.relu(F.max_pool2d(self.conv1(x), kernel_size=2))
+        x = F.relu(F.max_pool2d(self.conv2(x), kernel_size=2))
+        x = F.relu(self.fc1(x.view(-1, 4* 64)))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+    def predict(self,x):
+        return(self.forward(x))
 
 def split_channels(input, classes):
     '''Separate the two images and corresponding classes '''
     #separating the data so that we train on the two images separatly, and learn to classify them properly
-    input1 = torch.reshape(input[:,0,:], (1000,1,14,14))
+    input1 = torch.reshape(input[:,0,:], (input.shape[0],1,14,14))
     classes1 = classes[:,0]
 
-    input2 = torch.reshape(input[:,1,:], (1000,1,14,14))
+    input2 = torch.reshape(input[:,1,:], (input.shape[0],1,14,14))
     classes2 = classes[:,1]
 
     return input1,classes1, input2,classes2
 
-def train(model,train_input,train_target, train_classes, nb_epochs = 25, verbose = True):
-
+def train_two_images(model,train_input,train_target, train_classes, nb_epochs = 25, verbose = True):
+    '''
+    train the siamese network based on the input being two images of 14x14
+    '''
     #loss and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(net.parameters(),lr = 0.0005)
+    optimizer = optim.Adam(model.parameters(),lr = 0.005)
 
     #separating the data so that we train on the two images separatly, and learn to classify them properly
 
@@ -63,10 +101,17 @@ def train(model,train_input,train_target, train_classes, nb_epochs = 25, verbose
         out1 = model(train_input1)
         out2 = model(train_input2)
 
+        #auxilary loss: learn to detect the images
+        loss_aux = criterion(out1,train_classes1)+criterion(out2,train_classes2)
+        model.zero_grad()
+        loss_aux.backward(retain_graph=True)
+        optimizer.step()
+
+
         #combine the two tensor on top o feach other
-        out = torch.cat((out1, out2), 1)
+        out = torch.cat((out2, out1), 1)
         #perform actual prediction
-        response = F.relu(model.pooling(out))
+        response = model.pooling(out)
 
         #loss and optimization
         loss = criterion(response,train_target)
@@ -75,33 +120,36 @@ def train(model,train_input,train_target, train_classes, nb_epochs = 25, verbose
         optimizer.step()
 
         if verbose:
-            print("epoch {:3}, loss {:.5}".format(e,loss))
+            acc = accuracy(model, train_input, train_target)
+            print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
 
-def accuracy(model,input,target,classes):
+def train_model(model, train_input, train_target, mini_batch_size, verbose = False, lr = 0.05, nb_epochs = 25):
+    ''' Simple on training for handwritten recognition'''
 
-    input1,classes1, input2,classes2 = split_channels(input, classes)
-    out1 = model(input1)
-    out2 = model(input2)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(),lr = lr)
 
-    #combine the two tensor on top o feach other
-    out = torch.cat((out1, out2), 1)
+    for e in range(nb_epochs):
+        sum_loss = 0
+        for b in range(0, train_input.size(0), mini_batch_size):
+            output = model(train_input.narrow(0, b, mini_batch_size))
+            inter_target = train_target.narrow(0, b, mini_batch_size)
+            loss = criterion(output, train_target.narrow(0, b, mini_batch_size) )
+            model.zero_grad()
+            loss.backward()
+            optimizer.step()
+        if verbose:
+            print("Epoch {:3} loss {:7.4}".format(e, loss.data.numpy()))
+
+
+def accuracy(model,input,target):
+
     #perform actual prediction
-    response = F.relu(model.pooling(out))
+    response = model.predict(input)
 
     _, pred = torch.max(response,1)
     error = 0
     for tried,true in zip(pred,target):
         if tried != true: error+=1
 
-    return error*100/pred.shape[0]
-
-
-if __name__ == "__main__":
-
-    #load the data
-    train_input, train_target, train_classes, test_input, test_target, test_classes = prologue.generate_pair_sets(1000)
-
-    #definition of the model, loss and optimizer
-    net = SiameseNet()
-    train(net, train_input, train_target, train_classes, nb_epochs = 25, verbose = True)
-    print(accuracy(net,test_input,test_target,test_classes))
+    return 1-error/pred.shape[0]
