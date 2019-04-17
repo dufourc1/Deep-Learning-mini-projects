@@ -10,7 +10,7 @@ from torch import optim
 from torch.nn import functional as F
 
 from dlc_practical_prologue import generate_pair_sets
-from neural_nets import accuracy,SiameseNet, train_siamese
+from neural_nets import accuracy,SiameseNet, train_siamese, SiameseNet_test, train_model
 
 ################################################################################
 
@@ -21,19 +21,31 @@ train_input, train_target, train_classes,\
 
 train_input, train_classes = Variable(train_input), Variable(train_classes)
 
-## testing with auxilary loss function (default setting)
-model = SiameseNet()
-print("SiameseNet with auxilary loss function")
-train_siamese(model,train_input,train_target, train_classes, nb_epochs = 75, verbose = False)
-acc_train = accuracy(model,train_input,train_target)
-acc_test = accuracy(model,test_input,test_target)
-print("  accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train,acc_test))
-print("\n")
+test = 2
 
-## testing with
-model = SiameseNet()
-print("SiameseNet with no auxilary loss function")
-train_siamese(model,train_input,train_target, train_classes, nb_epochs = 75, verbose = False, aux = False)
-acc_train = accuracy(model,train_input,train_target)
-acc_test = accuracy(model,test_input,test_target)
-print("   accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train,acc_test))
+if test == 2:
+    model = SiameseNet_test()
+    model(train_input)
+    print("dimensions ok")
+    train_model(model,train_input,train_target,1000,verbose = True,nb_epochs = 75)
+    acc_train = accuracy(model,train_input,train_target)
+    acc_test = accuracy(model,test_input,test_target)
+    print("  accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train,acc_test))
+
+if test == 1:
+    ## testing with auxilary loss function (default setting)
+    model = SiameseNet()
+    print("SiameseNet with auxilary loss function")
+    train_siamese(model,train_input,train_target, train_classes, nb_epochs = 75, verbose = False)
+    acc_train = accuracy(model,train_input,train_target)
+    acc_test = accuracy(model,test_input,test_target)
+    print("  accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train,acc_test))
+    print("\n")
+
+    ## testing with
+    model = SiameseNet()
+    print("SiameseNet with no auxilary loss function")
+    train_siamese(model,train_input,train_target, train_classes, nb_epochs = 75, verbose = False, aux = False)
+    acc_train = accuracy(model,train_input,train_target)
+    acc_test = accuracy(model,test_input,test_target)
+    print("   accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train,acc_test))

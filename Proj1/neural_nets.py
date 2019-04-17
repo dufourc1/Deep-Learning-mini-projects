@@ -20,6 +20,52 @@ import dlc_practical_prologue as prologue
 #input size [1000,1,14,14]
 #one image is then [1,14,14]
 
+
+class SimpleNet(nn.Module):
+
+    def __init__(self):
+        super(SimpleNet,self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
+        self.fc1 = nn.Linear(4*64 , 100)
+        self.fc2 = nn.Linear(100, 10)
+        #to combine the ouput into a prediction at the output of the SiameseNet
+
+    def forward(self, x):
+        x = F.relu(F.max_pool2d(self.conv1(x), kernel_size=2))
+        x = F.relu(F.max_pool2d(self.conv2(x), kernel_size=2))
+        x = F.relu(self.fc1(x.view(-1, 4* 64)))
+        x = self.fc2(x)
+        return x
+
+    def predict(self,x):
+        _, predicted_class = torch.max(self.forward(x),1)
+        return predicted_class
+
+class SiameseNet_test(nn.Module):
+
+    def __init__(self, branch = None):
+        super(SiameseNet_test, self).__init__()
+        if branch == None:
+            self.branch= SimpleNet()
+        self.pooling = nn.Linear(20,2)
+
+    def forward(self,x):
+        input1 = torch.reshape(x[:,0,:], (x.shape[0],1,14,14))
+        input2 = torch.reshape(x[:,1,:], (x.shape[0],1,14,14))
+        out1 = self.branch(input1)
+        out2 = self.branch(input2)
+        x = torch.cat((out2, out1), 1)
+        x = self.pooling(x)
+        return x
+
+    def predict(self,x):
+        response = self.forward(x)
+        _, pred = torch.max(response,1)
+        return pred
+
+
+
 class SiameseNet(nn.Module):
 
     def __init__(self):
@@ -48,31 +94,11 @@ class SiameseNet(nn.Module):
         #combine the two tensor on top o feach other
         out = torch.cat((out2, out1), 1)
         #perform actual prediction
-        response = self.pooling(out)
+        _, response = torch.max(self.pooling(out),1)
 
         return response
 
-class SimpleNet(nn.Module):
 
-    def __init__(self):
-        super(SimpleNet,self).__init__()
-        self.conv1 = nn.Conv2d(2, 32, kernel_size=3)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
-        self.fc1 = nn.Linear(4*64 , 100)
-        self.fc2 = nn.Linear(100, 20)
-        #to combine the ouput into a prediction at the output of the SiameseNet
-        self.fc3 = nn.Linear(20,2)
-
-    def forward(self, x):
-        x = F.relu(F.max_pool2d(self.conv1(x), kernel_size=2))
-        x = F.relu(F.max_pool2d(self.conv2(x), kernel_size=2))
-        x = F.relu(self.fc1(x.view(-1, 4* 64)))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
-    def predict(self,x):
-        return(self.forward(x))
 
 def split_channels(input, classes):
     '''Separate the two images and corresponding classes '''
@@ -148,7 +174,7 @@ def train_siamese(model,train_input,train_target, train_classes, nb_epochs = 25,
             acc = accuracy(model, train_input, train_target)
             print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
 
-def train_model(model, train_input, train_target, mini_batch_size, verbose = False, lr = 0.05, nb_epochs = 25):
+def train_model(model, train_input, train_target, mini_batch_size, verbose = False, lr = 0.005, nb_epochs = 25):
     ''' Simple on training for handwritten recognition'''
 
     criterion = nn.CrossEntropyLoss()
@@ -171,11 +197,10 @@ def accuracy(model,input,target):
     #perform actual prediction
     response = model.predict(input)
 
-    _, pred = torch.max(response,1)
     error = 0
 
     #compute the percentage of error
-    for tried,true in zip(pred,target):
+    for tried,true in zip(response,target):
         if tried != true: error+=1
 
-    return 1-error/pred.shape[0]
+    return 1-error/response.shape[0]
