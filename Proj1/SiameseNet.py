@@ -159,7 +159,7 @@ def split_channels(input, classes):
 
 
 def accuracy(model,input,target):
-    
+
     #perform actual class prediction
     response = model(input).argmax(1)
     error = 0
