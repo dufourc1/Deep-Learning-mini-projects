@@ -14,6 +14,7 @@ from torch import optim
 from torch.nn import functional as F
 
 import dlc_practical_prologue as prologue
+from helpers import update_progress
 
 ################################################################################
 
@@ -72,11 +73,11 @@ class SiameseNet(nn.Module):
         x = self.pooling(x)
         return x
 
-    def train(self,train_input, train_target, train_classes = None, auxilary = False, verbose = True, nb_epochs = 50):
+    def train(self,train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50):
         """ Training of the siamese module.
-            if not auxilary:
+            if not auxiliary:
                 usual training
-            if auxilary:
+            if auxiliary:
                 first split the sample into the two images and use the branch to try to classify the numbers, compute the
                 loss wrt to the classes of digits and update the parameters  of the branch.
                 Then run the entire sample trough the sample and compute the loss against the train_target and update
@@ -89,26 +90,27 @@ class SiameseNet(nn.Module):
             is the first digit bigger than the second
         train_classes : [n,2]
             values of the two digits
-        auxilary : bool
-            use of the auxilary loss (the default is False).
+        auxiliary : bool
+            use of the auxiliary loss (the default is False).
         verbose : bool
             if True print the training  `verbose` (the default is True).
         nb_epochs : int
             epochs to train (the default is 50).
         """
 
-        if auxilary:
-            print("training with auxilary loss with {} epochs".format(nb_epochs))
-            if train_classes is None: print("Error: if auxilary loss, the model needs the classes of the training set")
-        else:
-            print("training with no auxilary losses with {} epochs".format(nb_epochs))
+        if auxiliary:
+            if verbose:
+                print("training with auxiliary loss with {} epochs".format(nb_epochs))
+            if train_classes is None: print("Error: if auxiliary loss, the model needs the classes of the training set")
+        elif verbose:
+            print("training with no auxiliary losses with {} epochs".format(nb_epochs))
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.parameters(),lr = 0.005)
 
         for e in range(nb_epochs):
 
-            if auxilary:
+            if auxiliary:
                 #first pass
                 #separating the data so that we train on the two images separatly, and learn to classify them properly
                 train_input1,train_classes1,train_input2,train_classes2 = split_channels(train_input, train_classes)
@@ -117,7 +119,7 @@ class SiameseNet(nn.Module):
                 out1 = self.branch(train_input1)
                 out2 = self.branch(train_input2)
 
-                #auxilary loss: learn to detect the handwritten digits directly
+                #auxiliary loss: learn to detect the handwritten digits directly
                 loss_aux = criterion(out1,train_classes1) + criterion(out2,train_classes2)
 
                 #optimize based on this
@@ -143,6 +145,8 @@ class SiameseNet(nn.Module):
             if verbose:
                 acc = accuracy(self, train_input, train_target)
                 print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
+            else:
+                update_progress((e+1)/nb_epochs, message="")
 
 
 

@@ -27,13 +27,13 @@ class ResBlock(nn.Module):
         return y
 
 class ResNet(nn.Module):
-    def __init__(self, nb_channels, kernel_size, nb_blocks):
+    def __init__(self, nb_channels, kernel_size, nb_blocks, in_channels = 2, out_channels =10):
         super(ResNet, self).__init__()
-        self.conv0 = nn.Conv2d(2, nb_channels, kernel_size = 1)
+        self.conv0 = nn.Conv2d(in_channels, nb_channels, kernel_size = 1)
         self.resblocks = nn.Sequential(*(ResBlock(nb_channels, kernel_size) for _ in range(nb_blocks)))
         self.resblocks2 = nn.Sequential(*(ResBlock(nb_channels, kernel_size) for _ in range(nb_blocks)))
         self.avg = nn.AvgPool2d(kernel_size = 14)
-        self.fc = nn.Linear(nb_channels, 10)
+        self.fc = nn.Linear(nb_channels, out_channels)
 
     def forward(self, x):
         x = F.relu(self.conv0(x))

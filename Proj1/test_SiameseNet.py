@@ -10,7 +10,8 @@ from torch import optim
 from torch.nn import functional as F
 
 from dlc_practical_prologue import generate_pair_sets
-from neural_nets import accuracy,SiameseNet, SimpleNet
+from SiameseNet import accuracy,SiameseNet, SimpleNet
+from ResNet import ResNet
 
 ################################################################################
 
@@ -21,22 +22,33 @@ train_input, train_target, train_classes,\
 
 train_input, train_classes = Variable(train_input), Variable(train_classes)
 
-epochs = 75
+def affiche_result(name, epochs, acc_train_with, acc_test_with, acc_train_withouth, acc_test_withouth):
+    ''' helper to print the result '''
+    print("------------------ Test results ------------------")
+    print("Training on {} epochs: ".format(epochs))
+    print(name +", auxilray:    accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_with,acc_test_with))
+    print(name +", no auxiliary: accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_withouth,acc_test_withouth))
+    print("--------------------------------------------------")
+    print("\n")
 
-branch = SimpleNet()
-model = SiameseNet(branch = branch)
-model.train(train_input, train_target, train_classes = train_classes, auxilary = True, verbose = True, nb_epochs = epochs)
-acc_train_with = accuracy(model,train_input,train_target)
-acc_test_with = accuracy(model,test_input,test_target)
+def test(branch_init,name, epochs = 75, verbose = False,args = []):
+    branch = branch_init(*args)
+    model = SiameseNet(branch = branch)
+    model.train(train_input, train_target, train_classes = train_classes, auxiliary = True, verbose = verbose, nb_epochs = epochs)
+    acc_train_with = accuracy(model,train_input,train_target)
+    acc_test_with = accuracy(model,test_input,test_target)
 
 
-branch = SimpleNet()
-model = SiameseNet(branch = branch)
-model.train(train_input, train_target, train_classes = train_classes, auxilary = False, verbose = True, nb_epochs = epochs)
-acc_train_withouth = accuracy(model,train_input,train_target)
-acc_test_withouth = accuracy(model,test_input,test_target)
-print("\n")
+    branch = branch_init(*args)
+    model = SiameseNet(branch = branch)
+    model.train(train_input, train_target, train_classes = train_classes, auxiliary = False, verbose = verbose, nb_epochs = epochs)
+    acc_train_withouth = accuracy(model,train_input,train_target)
+    acc_test_withouth = accuracy(model,test_input,test_target)
 
+    affiche_result(name, epochs, acc_train_with, acc_test_with, acc_train_withouth, acc_test_withouth)
 
-print("New module, auxilray:    accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_with,acc_test_with))
-print("New module, no auxilary: accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_withouth,acc_test_withouth))
+if __name__ == '__main__':
+
+    epochs = 50
+    test(SimpleNet, "SimpleNet branch", epochs = epochs, verbose = False)
+    test(ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1])
