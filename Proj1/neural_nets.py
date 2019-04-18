@@ -48,6 +48,8 @@ class SiameseNet_test(nn.Module):
         super(SiameseNet_test, self).__init__()
         if branch == None:
             self.branch= SimpleNet()
+        else:
+            self.branch = branch
         self.pooling = nn.Linear(20,2)
 
     def forward(self,x):
@@ -59,10 +61,55 @@ class SiameseNet_test(nn.Module):
         x = self.pooling(x)
         return x
 
-    def predict(self,x):
-        response = self.forward(x)
-        _, pred = torch.max(response,1)
-        return pred
+    def train(self,train_input, train_target, train_classes = None, auxilary = False, verbose = True, nb_epochs = 50):
+
+        if auxilary:
+            print("training with auxilary loss with {} epochs".format(nb_epochs))
+            if train_classes is None: print("Error: if auxilary loss, the model needs the classes of the training set")
+        else:
+            print("training with no auxilary losses with {} epochs".format(nb_epochs))
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(self.parameters(),lr = 0.005)
+
+        for e in range(nb_epochs):
+
+            if auxilary:
+
+                #separating the data so that we train on the two images separatly, and learn to classify them properly
+                train_input1,train_classes1,train_input2,train_classes2 = split_channels(train_input, train_classes)
+
+                #use the branch to perform handwritten digits classification
+                out1 = self.branch(train_input1)
+                out2 = self.branch(train_input2)
+
+                #auxilary loss: learn to detect the handwritten digits directly
+                loss_aux = criterion(out1,train_classes1) + criterion(out2,train_classes2)
+
+                #optimize based on this
+                self.zero_grad()
+                loss_aux.backward(retain_graph=True)
+                optimizer.step()
+
+
+                #loss and optimization of the whole model
+                response = self.forward(train_input)
+                loss = criterion(response,train_target)
+                self.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+            else:
+                response = self.forward(train_input)
+                loss = criterion(response,train_target)
+                self.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+            if verbose:
+                acc = accuracy(self, train_input, train_target)
+                print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
+
 
 
 
@@ -97,8 +144,6 @@ class SiameseNet(nn.Module):
         _, response = torch.max(self.pooling(out),1)
 
         return response
-
-
 
 def split_channels(input, classes):
     '''Separate the two images and corresponding classes '''
@@ -143,7 +188,6 @@ def train_siamese(model,train_input,train_target, train_classes, nb_epochs = 25,
     optimizer = optim.Adam(model.parameters(),lr = 0.005)
 
     #separating the data so that we train on the two images separatly, and learn to classify them properly
-
     train_input1,train_classes1,train_input2,train_classes2 = split_channels(train_input, train_classes)
 
     for e in range(nb_epochs):
@@ -171,7 +215,7 @@ def train_siamese(model,train_input,train_target, train_classes, nb_epochs = 25,
         optimizer.step()
 
         if verbose:
-            acc = accuracy(model, train_input, train_target)
+            acc = old_accuracy(model, train_input, train_target)
             print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
 
 def train_model(model, train_input, train_target, mini_batch_size, verbose = False, lr = 0.005, nb_epochs = 25):
@@ -181,7 +225,6 @@ def train_model(model, train_input, train_target, mini_batch_size, verbose = Fal
     optimizer = optim.Adam(model.parameters(),lr = lr)
 
     for e in range(nb_epochs):
-        sum_loss = 0
         for b in range(0, train_input.size(0), mini_batch_size):
             output = model(train_input.narrow(0, b, mini_batch_size))
             inter_target = train_target.narrow(0, b, mini_batch_size)
@@ -194,8 +237,22 @@ def train_model(model, train_input, train_target, mini_batch_size, verbose = Fal
 
 def accuracy(model,input,target):
 
-    #perform actual prediction
+    #perform actual class prediction
+    response = model(input).argmax(1)
+
+
+    error = 0
+
+    #compute the percentage of error
+    for tried,true in zip(response,target):
+        if tried != true: error+=1
+
+    return 1-error/response.shape[0]
+
+def old_accuracy(model,input,target):
+    #perform actual class prediction
     response = model.predict(input)
+
 
     error = 0
 
