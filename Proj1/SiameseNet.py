@@ -73,7 +73,7 @@ class SiameseNet(nn.Module):
         x = self.pooling(x)
         return x
 
-    def train(self,train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50):
+    def train(self,train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50, batch_size=250, device='cpu'):
         """ Training of the siamese module.
             if not auxiliary:
                 usual training
@@ -96,6 +96,8 @@ class SiameseNet(nn.Module):
             if True print the training  `verbose` (the default is True).
         nb_epochs : int
             epochs to train (the default is 50).
+        device : torch.device
+            Torch device (the default is 'cpu').
         """
 
         if auxiliary:
@@ -106,47 +108,50 @@ class SiameseNet(nn.Module):
             print("training with no auxiliary losses with {} epochs".format(nb_epochs))
 
         criterion = nn.CrossEntropyLoss()
+        criterion = criterion.to(device)
+
         optimizer = optim.Adam(self.parameters(),lr = 0.005)
 
         for e in range(nb_epochs):
+            for input, targets in zip(train_input.split(batch_size), train_target.split(batch_size)):
 
-            if auxiliary:
-                #first pass
-                #separating the data so that we train on the two images separatly, and learn to classify them properly
-                train_input1,train_classes1,train_input2,train_classes2 = split_channels(train_input, train_classes)
+                if auxiliary:
+                    #first pass
+                    #separating the data so that we train on the two images separatly, and learn to classify them properly
+                    train_input1,train_classes1,train_input2,train_classes2 = split_channels(train_input, train_classes)
 
-                #use the branch to perform handwritten digits classification
-                out1 = self.branch(train_input1)
-                out2 = self.branch(train_input2)
+                    #use the branch to perform handwritten digits classification
+                    out1 = self.branch(train_input1)
+                    out2 = self.branch(train_input2)
 
-                #auxiliary loss: learn to detect the handwritten digits directly
-                loss_aux = criterion(out1,train_classes1) + criterion(out2,train_classes2)
+                    #auxiliary loss: learn to detect the handwritten digits directly
+                    loss_aux = criterion(out1,train_classes1) + criterion(out2,train_classes2)
 
-                #optimize based on this
-                self.zero_grad()
-                loss_aux.backward(retain_graph=True)
-                optimizer.step()
+                    #optimize based on this
+                    self.zero_grad()
+                    loss_aux.backward(retain_graph=True)
+                    optimizer.step()
 
-                #second pass
-                #loss and optimization of the whole model
-                response = self.forward(train_input)
-                loss = criterion(response,train_target)
-                self.zero_grad()
-                loss.backward()
-                optimizer.step()
+                    #second pass
+                    #loss and optimization of the whole model
+                    response = self.forward(train_input)
+                    loss = criterion(response,train_target)
+                    self.zero_grad()
+                    loss.backward()
+                    optimizer.step()
 
-            else:
-                response = self.forward(train_input)
-                loss = criterion(response,train_target)
-                self.zero_grad()
-                loss.backward()
-                optimizer.step()
+                else:
+                    response = self.forward(train_input)
+                    loss = criterion(response,train_target)
+                    self.zero_grad()
+                    loss.backward()
+                    optimizer.step()
 
-            if verbose:
-                acc = accuracy(self, train_input, train_target)
-                print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
-            else:
-                update_progress((e+1)/nb_epochs, message="")
+                if verbose:
+                    acc = accuracy(self, train_input, train_target)
+                    print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
+                else:
+                    update_progress((e+1)/nb_epochs, message="")
 
 
 

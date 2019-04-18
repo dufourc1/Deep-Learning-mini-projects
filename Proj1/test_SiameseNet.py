@@ -14,14 +14,6 @@ from SiameseNet import accuracy,SiameseNet, SimpleNet
 from ResNet import ResNet
 
 ################################################################################
-
-
-#load the data
-train_input, train_target, train_classes,\
-    test_input, test_target, test_classes = generate_pair_sets(1000)
-
-train_input, train_classes = Variable(train_input), Variable(train_classes)
-
 def affiche_result(name, epochs, acc_train_with, acc_test_with, acc_train_withouth, acc_test_withouth):
     ''' helper to print the result '''
     print("------------------ Test results ------------------")
@@ -31,24 +23,46 @@ def affiche_result(name, epochs, acc_train_with, acc_test_with, acc_train_withou
     print("--------------------------------------------------")
     print("\n")
 
-def test(branch_init,name, epochs = 75, verbose = False,args = []):
+def test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+ branch_init,name, epochs = 75, batch_size = 250, verbose = False,args = [], device = 'cpu'):
     branch = branch_init(*args)
     model = SiameseNet(branch = branch)
-    model.train(train_input, train_target, train_classes = train_classes, auxiliary = True, verbose = verbose, nb_epochs = epochs)
-    acc_train_with = accuracy(model,train_input,train_target)
-    acc_test_with = accuracy(model,test_input,test_target)
+
+    model = model.to(device)
+
+    input_train, target_train, classes_train = input_train.to(device), target_train.to(device), classes_train.to(device)
+    input_test, target_test, classes_test = input_test.to(device), target_test.to(device), classes_test.to(device)
+
+    model.train(input_train, target_train, train_classes = classes_train, auxiliary = True, verbose = verbose, nb_epochs = epochs, batch_size= batch_size, device=device)
+    acc_train_with = accuracy(model,input_train,target_train)
+    acc_test_with = accuracy(model,input_test,target_test)
 
 
     branch = branch_init(*args)
     model = SiameseNet(branch = branch)
-    model.train(train_input, train_target, train_classes = train_classes, auxiliary = False, verbose = verbose, nb_epochs = epochs)
-    acc_train_withouth = accuracy(model,train_input,train_target)
-    acc_test_withouth = accuracy(model,test_input,test_target)
+
+    model = model.to(device)
+
+    model.train(input_train, target_train, train_classes = classes_train, auxiliary = False, verbose = verbose, nb_epochs = epochs, batch_size= batch_size, device=device)
+    acc_train_withouth = accuracy(model,input_train,target_train)
+    acc_test_withouth = accuracy(model,input_test,target_test)
 
     affiche_result(name, epochs, acc_train_with, acc_test_with, acc_train_withouth, acc_test_withouth)
 
 if __name__ == '__main__':
 
-    epochs = 50
-    test(SimpleNet, "SimpleNet branch", epochs = epochs, verbose = False)
-    test(ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1])
+    #load the data
+    input_train, target_train, classes_train,\
+        input_test, target_test, classes_test = generate_pair_sets(1000)
+
+    input_train, classes_train = Variable(input_train), Variable(classes_train)
+
+    device = 'cuda'
+
+    epochs = 75
+    batch_size = 250
+
+    test(input_train, target_train, classes_train,\
+        input_test, target_test, classes_test, SimpleNet, "SimpleNet branch", epochs = epochs, verbose = False, device=device)
+    test(input_train, target_train, classes_train,\
+        input_test, target_test, classes_test, ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1], device=device)
