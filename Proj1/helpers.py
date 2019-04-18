@@ -2,13 +2,13 @@ import torch
 import matplotlib.pyplot as plt
 import sys
 
-def show(n):
+def show(n, input, classes, target):
     plt.figure()
-    plt.imshow(input_train[n,0])
+    plt.imshow(input[n,0])
     plt.show()
-    plt.imshow(input_train[n,1])
+    plt.imshow(input[n,1])
     plt.show()
-    print('classes :\t 0: {};\t 1: {}; label: {}'.format(*classes_train[n], target_train[n]))
+    print('classes :\t 0: {};\t 1: {}; label: {}'.format(*classes[n], target[n]))
 
 def update_progress(progress,message=""):
     # update_progress() : Displays or updates a console progress bar
