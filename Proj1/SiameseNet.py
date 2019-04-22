@@ -147,11 +147,11 @@ class SiameseNet(nn.Module):
                     loss.backward()
                     optimizer.step()
 
-                if verbose:
-                    acc = accuracy(self, train_input, train_target)
-                    print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
-                else:
-                    update_progress((e+1)/nb_epochs, message="")
+            if verbose:
+                acc = accuracy(self, train_input, train_target)
+                print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
+            else:
+                update_progress((e+1)/nb_epochs, message="")
 
 
 
