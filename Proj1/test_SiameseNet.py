@@ -18,7 +18,7 @@ def affiche_result(name, epochs, acc_train_with, acc_test_with, acc_train_withou
     ''' helper to print the result '''
     print("------------------ Test results ------------------")
     print("Training on {} epochs: ".format(epochs))
-    print(name +", auxilray:    accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_with,acc_test_with))
+    print(name +", auxiliray:    accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_with,acc_test_with))
     print(name +", no auxiliary: accuracy on train {:4.2%} and on test {:4.2%}".format(acc_train_withouth,acc_test_withouth))
     print("--------------------------------------------------")
     print("\n")
