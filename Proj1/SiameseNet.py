@@ -73,7 +73,7 @@ class SiameseNet(nn.Module):
         x = self.pooling(x)
         return x
 
-    def train(self,train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50, batch_size=250, device='cpu'):
+    def train(self,train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50, batch_size=250, device='cpu', evolution = False, test_input = None, test_target = None):
         """ Training of the siamese module.
             if not auxiliary:
                 usual training
@@ -111,6 +111,10 @@ class SiameseNet(nn.Module):
         criterion = criterion.to(device)
 
         optimizer = optim.Adam(self.parameters(),lr = 0.005)
+
+        if evolution:
+            acc_train = []
+            acc_test = []
 
         for e in range(nb_epochs):
             for input, targets in zip(train_input.split(batch_size), train_target.split(batch_size)):
@@ -152,6 +156,12 @@ class SiameseNet(nn.Module):
                 print("epoch {:3}, loss {:7.4}, accuracy {:.2%}".format(e,loss,acc))
             else:
                 update_progress((e+1)/nb_epochs, message="")
+
+            if evolution:
+                acc_train.append(accuracy(self, train_input, train_target))
+                acc_test.append( accuracy(self, test_input, test_target))
+        if evolution:
+            return acc_train,acc_test
 
 
 

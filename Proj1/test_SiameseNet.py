@@ -3,6 +3,9 @@
 
 import torch
 import math
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
 
 from torch.autograd import Variable
 from torch import nn
@@ -33,17 +36,37 @@ def test(input_train, target_train, classes_train, input_test, target_test, clas
     input_train, target_train, classes_train = input_train.to(device), target_train.to(device), classes_train.to(device)
     input_test, target_test, classes_test = input_test.to(device), target_test.to(device), classes_test.to(device)
 
-    model.train(input_train, target_train, train_classes = classes_train, auxiliary = True, verbose = verbose, nb_epochs = epochs, batch_size= batch_size, device=device)
+    acc_train, acc_test = model.train(input_train, target_train, train_classes = classes_train, auxiliary = True, verbose = verbose,\
+                nb_epochs = epochs, batch_size= batch_size, device=device,evolution = True, test_input = input_test, test_target = target_test)
+
+
+    plt.figure()
+    plt.plot(acc_test, label = "validation accuracy")
+    plt.plot(acc_train, label = "train accuracy")
+    plt.legend()
+    plt.title(name)
+    plt.tight_layout()
+    plt.savefig("data/"+name+"_accuracy.pdf")
+
     acc_train_with = accuracy(model,input_train,target_train)
     acc_test_with = accuracy(model,input_test,target_test)
-
 
     branch = branch_init(*args)
     model = SiameseNet(branch = branch)
 
     model = model.to(device)
 
-    model.train(input_train, target_train, train_classes = classes_train, auxiliary = False, verbose = verbose, nb_epochs = epochs, batch_size= batch_size, device=device)
+    acc_train, acc_test = model.train(input_train, target_train, train_classes = classes_train, auxiliary = False, verbose = verbose,\
+                nb_epochs = epochs, batch_size= batch_size, device=device,evolution = True, test_input = input_test, test_target = target_test)
+
+    plt.figure()
+    plt.plot(acc_test, label = "validation accuracy")
+    plt.plot(acc_train, label = "train accuracy")
+    plt.legend()
+    plt.title(name)
+    plt.tight_layout()
+    plt.savefig("data/"+name+"_accuracy_no_auxiliary.pdf")
+
     acc_train_withouth = accuracy(model,input_train,target_train)
     acc_test_withouth = accuracy(model,input_test,target_test)
 
@@ -57,7 +80,7 @@ if __name__ == '__main__':
 
     input_train, classes_train = Variable(input_train), Variable(classes_train)
 
-    device = 'cuda'
+    device = 'cpu'
 
     epochs = 75
     batch_size = 250
