@@ -5,6 +5,7 @@ from torchvision import datasets
 import argparse
 import os
 
+
 ######################################################################
 
 parser = argparse.ArgumentParser(description='DLC prologue file for practical sessions.')
