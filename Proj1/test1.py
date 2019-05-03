@@ -2,6 +2,8 @@ import torch
 import torchvision
 from torch import nn
 
+#do stuff 
+
 from torch.autograd import Variable
 from torch.nn import functional as F
 
@@ -17,7 +19,7 @@ train_input, train_target, train_classes, test_input, test_target, test_classes 
 train_input, train_target = Variable(train_input), Variable(train_target.float()) # use autograd
 test_input, test_target = Variable(test_input), Variable(test_target.float())
 
-######################################################################   
+######################################################################
 # input size [1000, 2, 14, 14]
 # Marche tres mal :
 
@@ -41,42 +43,42 @@ class Net(nn.Module):
 
 
 ######################################################################
-# TRAINING FUNCTION 
-def train_model(model, train_input, train_target, mini_batch_size):   
+# TRAINING FUNCTION
+def train_model(model, train_input, train_target, mini_batch_size):
     optimizer = torch.optim.SGD(model.parameters(), lr = lr)
     #criterion = nn.CrossEntropyLoss()                       # Cross-entropy loss
     criterion = nn.MSELoss()
 
     mu, std = train_input.mean(), train_input.std()
     train_input.sub_(mu).div_(std)                           # Normalizing
-    
+
     for e in range(nb_epochs):
         sum_loss = 0
         for b in range(0, train_input.size(0), batch_size):
             output = model(train_input[b:b+batch_size])
             loss = criterion(output, train_target[b:b+batch_size])
             sum_loss = sum_loss + loss.item()
-            
+
             #L2 PANALTIES
             #for p in model.parameters():
             #    loss += lambda1 * p.pow(2).sum()
-            
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
         print(e, sum_loss)
-    
-    
+
+
     return
-    
+
 
 ######################################################################
-# TEST FUNCTION 
+# TEST FUNCTION
 # fonctionne pas encore correctement
 
 def compute_nb_errors(model, test_input, test_target, mini_batch_size):
     nb_errors = 0
-    
+
     for b in range(0, test_input.size(0), mini_batch_size):
         output = model(test_input[b:b+mini_batch_size]).view(-1)
         for k in range(mini_batch_size):
@@ -84,10 +86,10 @@ def compute_nb_errors(model, test_input, test_target, mini_batch_size):
             print(test_target.data[b + k])
             #if output[k] <= 0:  # test_target.data[b + k] != output[k]:
             #    nb_errors += 1
-    
+
     return nb_errors
-    
-    
+
+
 ######################################################################
 lr = 1e-1
 nb_epochs = 25
