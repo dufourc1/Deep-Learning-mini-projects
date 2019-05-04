@@ -1,20 +1,39 @@
-from sys import argv, exit
+from sys import exit
+import argparse
+
 import torch
 
-def foo():
-    print("This is a test")
+from FullyConnected import FullyConnected
 
-tests = {'test': foo}
+################################################################################
+parser = argparse.ArgumentParser(description='Reproduction of our results for Project 1')
 
-if __name__ == '__main__':
+parser.add_argument('model', type=str, default='NoModel',
+                    help = 'The model to be tested.')
 
-    if len(argv) < 2:
-        print("A model has to be chosen")
-        exit(1)
-    if tests.get(argv[1].lower()) is None:
-        print("Invalid model")
-        exit(1)
+args = parser.parse_args()
 
-    test = tests.get(argv[1].lower())
+################################################################################
 
-    test()
+def no_model():
+    print("A model has to be chosen")
+    exit(1)
+
+def make_FullyConnected():
+    return FullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2)
+
+model_makers = {'NoModel': no_model,
+            'test': make_FullyConnected,
+            'fcnn': make_FullyConnected}
+
+if model_makers.get(args.model) is None:
+    print("Invalid model")
+    exit(1)
+
+model_maker = model_makers.get(args.model)
+model = model_maker()
+
+
+from test import test
+
+test(model)
