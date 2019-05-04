@@ -14,7 +14,7 @@ class MSE(Module):
         '''
         return the derivative of the MSE loss with respect to the target
         '''
-        return (target-input)*2/input.shape[0]
+        return (input-target)*2/input.shape[0]
 
 class CrossEntropy(Module):
 
