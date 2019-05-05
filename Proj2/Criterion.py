@@ -1,20 +1,30 @@
 import torch
 from Module import Module
 
+
 ''''
 Need for an abstract class criterion ? seems to be a double of Module then
 '''
 
+# TODO: check if all implementations are correct, in particular derivatives
+
 class MSE(Module):
 
     def forward(self,input, target):
-        return torch.sum(torch.pow(input-target,2))/input.shape[0]
+        input = input.view(target.size())
+        return ((input-target)**2).mean()
 
     def backward(self,input, target):
         '''
         return the derivative of the MSE loss with respect to the target
+
         '''
-        return (input-target)*2/input.shape[0]
+        input = input.view(target.shape)
+        derivative = (input-target)*2/input.shape[0]
+        if len(derivative.shape) == 1:
+            return derivative
+        else:
+            return derivative.t()
 
 class CrossEntropy(Module):
 

@@ -2,18 +2,21 @@ import torch
 
 from Module import Module
 
+# TODO: check if torch.relu can be used
+# TODO: check derivative of relu
+
 class Relu(Module):
 
     def forward(self,x):
         #apply Relu
-        print(x.type())
-        return torch.max(x, torch.tensor([0.]))
+        #return torch.max(x, torch.zeros_like(x))
+        return torch.relu(x)
 
     def backward(self,x):
         #apply derivative of relu
-        inter = torch.max(x, torch.tensor([0.]))
-        inter[inter <= 0.] = 0.
-        inter[inter > 0.] = 1.
+        inter = torch.max(x, torch.zeros_like(x))
+        inter[inter < 0.] = 0.
+        inter[inter >= 0.] = 1.
         return inter
 
 

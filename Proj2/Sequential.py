@@ -19,18 +19,30 @@ class Sequential(Module):
         return x
 
     def backward(self, next_derivative):
+        """ backward operation for sequential model
+
+        Parameters
+        ----------
+        next_derivative : tensor
+            derivative of the loss with respect to the output of the sequential model
+
+        """
         #warning ! see scope of modifications and use copy if necessary
         inter = next_derivative
         for layer in self.layers[::-1]:
-            print("inter in backward")
-            print(inter)
             inter = layer.backward(inter)
 
     def zero_grad(self):
+        '''
+        Set all the gradients of the parameters to 0 in each layer of the sequential model
+        '''
         for layer in self.layers:
             layer.zero_grad()
 
     def param(self):
+        '''
+        return a list of all the parameters in the sequential model beginning by the first one in forward order
+        '''
         params = []
         for layer in self.layers:
             inter = layer.param()
