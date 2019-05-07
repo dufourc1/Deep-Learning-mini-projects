@@ -5,6 +5,7 @@ import torch
 
 from FullyConnected import FullyConnected
 from BasicConvolutional import BasicConvolutional, BasicFullyConvolutional
+from ResNet import ResNet
 
 ################################################################################
 parser = argparse.ArgumentParser(description='Reproduction of our results for Project 1')
@@ -33,11 +34,15 @@ def make_BasicFullyConv():
         kernel_size_list= [2, 2, 3, 3, 5, 4],
         activation_fc=torch.nn.functional.tanh)
 
+def make_ResNet():
+    return ResNet(nb_channels=27, kernel_size=5, nb_blocks=7)
+
 model_makers = {'NoModel': no_model,
             'test': make_FullyConnected,
             'fcnn': make_FullyConnected,
             'basicconv': make_BasicConv,
-            'basicfullyconv': make_BasicFullyConv}
+            'basicfullyconv': make_BasicFullyConv,
+            'resnet': make_ResNet}
 
 if model_makers.get(args.model) is None:
     print("Invalid model")

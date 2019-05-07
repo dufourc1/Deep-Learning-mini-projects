@@ -24,13 +24,13 @@ def test(model, mean=True, n_trials = 5, device=None):
 
         criterion = torch.nn.CrossEntropyLoss()
 
-        lr, nb_epochs, batch_size = 10e-4, 150, 250
+        lr, nb_epochs, batch_size = 10e-3, 50, 250
 
         model = model.to(device)
         criterion = criterion.to(device)
 
-        # optimizer = torch.optim.Adam(model.parameters(),lr)
-        optimizer = torch.optim.SGD(model.parameters(), lr= 10e-2)
+        optimizer = torch.optim.Adam(model.parameters(),lr)
+        # optimizer = torch.optim.SGD(model.parameters(), lr= 10e-2)
 
         # optimizer.to(device)
         input_train, target_train = input_train.to(device), target_train.to(device)
