@@ -8,7 +8,7 @@ class Parameters(Module):
         self.value = value
 
         # initialization at 0 may raise issues later ?
-        self.grad = torch.zeros_like(self.value)
+        self.grad = torch.empty(self.value.shape)
 
     def __str__(self):
         representation = "parameter of size  {}".format(self.value.shape)

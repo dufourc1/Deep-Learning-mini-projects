@@ -20,11 +20,8 @@ class MSE(Module):
 
         '''
         input = input.view(target.shape)
-        derivative = (input-target)*2/input.shape[0]
-        if len(derivative.shape) == 1:
-            return derivative
-        else:
-            return derivative.t()
+        derivative = 2*(input-target)/input.numel()
+        return derivative
 
 class CrossEntropy(Module):
 

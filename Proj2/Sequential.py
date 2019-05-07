@@ -28,7 +28,7 @@ class Sequential(Module):
 
         """
         #warning ! see scope of modifications and use copy if necessary
-        inter = next_derivative
+        inter = next_derivative.clone()
         for layer in self.layers[::-1]:
             inter = layer.backward(inter)
 

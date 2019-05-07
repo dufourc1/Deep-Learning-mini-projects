@@ -29,15 +29,17 @@ class Linear(Module):
         torch float64 tensor
             result of the forward pass of dimension [number_of_training_points,output_size]
         """
+
+
+
         #we check if we have a single datapoint entry, in which case we do not have to worry about the dimensions
         if len(x.shape)>1:
-            self.input.value = x.t()
-
+            self.input.value = x
             #expand the bias vector so it matches the size of the mini batches
-            B = self.bias.value.repeat(1,self.input.value.shape[1]).view(-1,self.bias.value.shape[0]).t()
+            B = self.bias.value.repeat(1,self.input.value.t().shape[1]).view(-1,self.bias.value.shape[0]).t()
             #do the actual forward pass
-            self.result.value = torch.mm(self.weights.value,self.input.value) + B
-            self.result.value = self.result.value.t()
+            self.result.value = x.matmul(self.weights.value.t()) + self.bias.value
+            #self.result.value = self.result.value.t()
 
 
         else:
@@ -63,69 +65,41 @@ class Linear(Module):
             return dloss/dx_i so that the next layer can perform backward propagation
 
         """
-        print(next_derivative.shape)
 
+
+
+        #add a new dimension if necessary so that the derivative is a matrix not a vector
         if len(next_derivative.shape) == 1:
-            #add a new dimension so that the derivative is a matrix not a vector
             next_derivative = next_derivative.view(next_derivative.shape[0],1)
         if len(self.input.value.shape) == 1:
-            #add a new dimension so that the derivative is a matrix not a vector
-            x_i = self.input.value.view(self.input.value.shape[0],1)
+            x_i = self.input.value.view(1,self.input.value.shape[0])
         else:
             x_i = self.input.value
 
-        print(x_i.shape)
-        print(next_derivative.shape)
+        #debugging
+        # print("backward for {}".format(self))
+        # print("derivative received is {}".format(next_derivative.shape))
+        # print("input was of size {}".format(self.input.value.shape))
+
         # derivative with respect to the weights: dloss/dw
-        self.weights.grad += torch.mm(next_derivative,x_i.t())
+        self.weights.grad += torch.mm(next_derivative.t(),x_i)
+
         #derivative with respect to the bias: dloss/dbias
-        self.bias.grad += torch.sum(next_derivative, dim=1)
+        self.bias.grad += torch.sum(next_derivative.t(), dim=1)
+
         #derivative if the loss with respect to the input of the layer:  dloss/dx_i pass it to the next layer
-        print(self)
-        print(self.weights)
-        print(next_derivative.shape)
-        new_next_derivative = torch.mm(self.weights.value.t(),next_derivative)
+        new_next_derivative = torch.mm(next_derivative,self.weights.value)
 
         # return dloss/dx_i so that it can be passed to the next layer
         return new_next_derivative
 
 
-
-
-        # for i in range(self.input.value.shape[1]):
-        #
-        #     #pick input x_i and dloss/dx_i
-        #     inter_input = self.input.value[:,i]
-        #     inter_derivative = next_derivative[:,i]
-        #
-        #     #debugging print
-        #     # print("debuging backward linear")
-        #     # print("derivative recieved as input shape {}".format(next_derivative.shape))
-        #     # print("inter input shape: {}".format(inter_input.shape))
-        #     # print("inter_derivative shape: {}".format(inter_derivative.shape))
-        #     # print("{} weights grad shape: {}".format(self.__str__(),self.weights.grad.shape))
-        #     # print("end debug backward linear")
-        #
-        #     #apply course formula to get the dloss/dw and dloss/dbias
-        #     self.weights.grad += torch.mm(inter_derivative.view(inter_derivative.shape[0],1),
-        #                                 inter_input.view(1,inter_input.shape[0]))
-        #     self.bias.grad += inter_derivative.view(-1)
-        #
-        #     #create dloss/dx_i in order to pass it to the next layer
-        #     #resize to avoid later issues of compatibility
-        #     if len(inter_derivative.shape) == 1:
-        #         new_next_derivative[:,i] = torch.mv(self.weights.value.t(), inter_derivative)
-        #     else :
-        #         new_next_derivative[:,i] = torch.mm(self.weights.value.t(), inter_derivative)
-        #
-        # return new_next_derivative
-
     def zero_grad(self):
         '''
         Set all the parameters' gradient to 0
         '''
-        self.weights.grad = torch.zeros(self.weights.value.shape)
-        self.bias.grad = torch.zeros(self.bias.value.shape)
+        self.weights.grad.zero_()
+        self.bias.grad.zero_()
 
 
     def param(self):
