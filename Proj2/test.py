@@ -67,7 +67,9 @@ def generate_disc_set(nb):
 # TODO: check why there are differences when evaluating the two models in subsamples of the data
 #        but not in the all data set
 
-which_test = "sequential"
+which_test = "gradient linear"
+
+
 
 #############################################################################################
 if which_test == "training":
@@ -177,8 +179,8 @@ if which_test == "sequential":
             output_ref = model(input_narrow)
             if torch.max(output_ref-output_test)>torch.tensor([0.]):
                 print("Warning silent failure may have occured {}".format(torch.max(output_ref-output_test)))
-                print(torch.cat([output_ref,output_test]))
-                break
+                #print(torch.cat([output_ref,output_test]))
+                #break
             loss_ref = criterion_ref(output_ref, target.narrow(0, b, mini_batch_size))
             loss_epoch_ref += loss_ref
             model.zero_grad()
@@ -205,9 +207,7 @@ if which_test == "sequential":
 
 ###############################################################################################
 if which_test == "gradient linear":
-    '''
-    diff of 1e-14 --> don't know where it is from
-    '''
+
     criterion_test = Criterion.MSE()
     criterion_ref = nn.MSELoss()
 

@@ -15,8 +15,8 @@ class Relu(Module):
     def backward(self,x):
         #apply derivative of relu
         inter = torch.max(x, torch.zeros_like(x))
-        inter[inter < 0.] = 0.
-        inter[inter >= 0.] = 1.
+        inter[inter <= 0.] = 0.
+        inter[inter > 0.] = 1.
         return inter
 
 
