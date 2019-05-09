@@ -47,36 +47,41 @@ device = 'cpu'
 
 print('Model 1 : Convolution and max-pool layer')
 model = SimpleConv()
-test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+     model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
 
 
 print('Model 2 : Convolution and max-pool layer (other formulation)')
 model = SimpleConv2()
-test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+     model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
 
 
 
 nb_epochs = 50
 print('Model 3 : Fully Connected layers (no dropout)')
 model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2)
-test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+     model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
 
 dropout = 0.25
 print('Model 4 : Fully Connected layers with dropout ({:0.2f})'.format(dropout))
 model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout)
-test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+     model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
 
 
 nb_epochs = 20
 # bon résultat avec 20 itérations (augmenter le nombre d'iération n'améliore pas sensiblement "Accuracy on TEST")
 print('Model 5 : Fully Connected layers with dropout ({:0.2f}) and batch normalization'.format(dropout))
 model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
-test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+     model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
 
 
 
