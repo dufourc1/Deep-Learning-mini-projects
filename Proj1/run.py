@@ -70,6 +70,9 @@ model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop 
 test(input_train, target_train, classes_train,\
         input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
 
+
+nb_epochs = 20
+# already a good approximation with only 20 epochs
 print('Model 5 : Fully Connected layers with dropout ({:0.2f}) and batch normalization'.format(dropout))
 model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
 test(input_train, target_train, classes_train,\
