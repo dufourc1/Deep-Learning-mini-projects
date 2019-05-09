@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class basic_layer(nn.Module):
     def __init__(self, n_in, n_out):
-        super(layer, self).__init__()
+        super(basic_layer, self).__init__()
         self.fc1 = nn.Linear(n_in, n_out)
 
     def forward(self, x):
