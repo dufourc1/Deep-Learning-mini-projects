@@ -72,7 +72,7 @@ test(input_train, target_train, classes_train,\
 
 
 nb_epochs = 20
-# already a good approximation with only 20 epochs
+# bon résultat avec 20 itérations (augmenter le nombre d'iération n'améliore pas sensiblement "Accuracy on TEST")
 print('Model 5 : Fully Connected layers with dropout ({:0.2f}) and batch normalization'.format(dropout))
 model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
 test(input_train, target_train, classes_train,\
