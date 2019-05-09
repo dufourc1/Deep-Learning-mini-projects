@@ -11,10 +11,10 @@ class Linear(Module):
 
     def __init__(self, input_size, output_size):
         super(Linear,self).__init__()
-        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.double).normal_())
-        self.bias = Parameters(torch.empty(output_size,dtype=torch.double).normal_())
-        self.result = Parameters(torch.empty(output_size,dtype=torch.double))
-        self.input = Parameters(torch.empty(input_size,dtype=torch.double))
+        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.float32).normal_())
+        self.bias = Parameters(torch.zeros(output_size,dtype=torch.float32))
+        self.result = Parameters(torch.empty(output_size,dtype=torch.float32))
+        self.input = Parameters(torch.empty(input_size,dtype=torch.float32))
 
     def forward(self,x):
         """perform the forward pass for a fully connected linear layer of sizes input_size -> output_size
