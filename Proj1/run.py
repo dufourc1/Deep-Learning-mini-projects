@@ -6,7 +6,7 @@ from FullyConnected import Net2
 
 
 def test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
- model, epochs = 150, batch_size = 250, device = 'cpu'):
+         model, epochs = 150, batch_size = 250, device = 'cpu', penalty = False):
     lr = 10e-3
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),lr)
@@ -21,6 +21,12 @@ def test(input_train, target_train, classes_train, input_test, target_test, clas
             optimizer.zero_grad()
             output = model(input)
             loss = criterion(output, targets)
+          
+            # L2 penalties
+            if penalty:
+                for p in model.parameters():
+                    loss += lambda1 * p.pow(2).sum()
+            
             loss.backward()
             optimizer.step()
         with torch.no_grad():
@@ -75,12 +81,17 @@ test(input_train, target_train, classes_train, input_test, target_test, classes_
 
 
 
-nb_epochs = 20
+#nb_epochs = 20
 # bon résultat avec 20 itérations (augmenter le nombre d'iération n'améliore pas sensiblement "Accuracy on TEST")
 print('Model 5 : Fully Connected layers with dropout ({:0.2f}) and batch normalization'.format(dropout))
 model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
 test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
      model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
+print('Model 6 : Fully Connected layers with dropout ({:0.2f}), batch normalization, L2 penalty'.format(dropout))
+model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
+test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
+     model, epochs = nb_epochs, batch_size = batch_size, device = device, penalty = True)
 
 
 
