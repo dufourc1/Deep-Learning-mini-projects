@@ -8,6 +8,7 @@ from FullyConnected import Net2
 def test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
          model, epochs = 150, batch_size = 250, device = 'cpu', penalty = False):
     lr = 10e-3
+    lambda1 = 0.002
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),lr)
 
