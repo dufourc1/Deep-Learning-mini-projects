@@ -11,7 +11,7 @@ class Linear(Module):
 
     def __init__(self, input_size, output_size):
         super(Linear,self).__init__()
-        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.float32).normal_())
+        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.float32).uniform_())
         self.bias = Parameters(torch.zeros(output_size,dtype=torch.float32))
         self.result = Parameters(torch.empty(output_size,dtype=torch.float32))
         self.input = Parameters(torch.empty(input_size,dtype=torch.float32))
@@ -70,7 +70,7 @@ class Linear(Module):
 
         #add a new dimension if necessary so that the derivative is a matrix not a vector
         if len(next_derivative.shape) == 1:
-            next_derivative = next_derivative.view(next_derivative.shape[0],1)
+            next_derivative = next_derivative.view(1,next_derivative.shape[0])
         if len(self.input.value.shape) == 1:
             x_i = self.input.value.view(1,self.input.value.shape[0])
         else:
@@ -83,6 +83,10 @@ class Linear(Module):
 
         # derivative with respect to the weights: dloss/dw
         self.weights.grad += torch.mm(next_derivative.t(),x_i)
+        # if torch.max(self.weights.grad).item() ==0:
+        #     print("INDICATION OF VANISHING GRADIENT")
+        #     print(self)
+        #     print(torch.max(self.input.value),torch.max(next_derivative))
 
         #derivative with respect to the bias: dloss/dbias
         self.bias.grad += torch.sum(next_derivative.t(), dim=1)

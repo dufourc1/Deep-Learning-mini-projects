@@ -7,17 +7,28 @@ from Module import Module
 
 class Relu(Module):
 
+    def __init__(self):
+        super(Relu,self).__init__()
+        self.input = torch.empty(1)
+
+
     def forward(self,x):
         #apply Relu
         #return torch.max(x, torch.zeros_like(x))
+        self.input = x
         return torch.relu(x)
 
-    def backward(self,x):
-        #apply derivative of relu
-        inter = torch.max(x, torch.zeros_like(x))
+    def backward(self,dx):
+        #apply derivative of relu in the backward propagation scheme
+        # return the pointwise product of its derivative and the derivative of the next layer
+
+        #compute the derivative of the relu
+        inter = torch.max(self.input, torch.zeros_like(self.input))
         inter[inter <= 0.] = 0.
         inter[inter > 0.] = 1.
-        return inter
+
+        #return hadamard product
+        return inter*dx
 
 
     def __str__(self):
@@ -25,13 +36,18 @@ class Relu(Module):
 
 class Tanh(Module):
 
+    def __init__(self):
+        super(Tanh,self).__init__()
+        self.input = torch.empty(1)
+
     def forward(self,x):
-        #apply tanh
+        self.input = x
         return x.tanh()
 
-    def backward(self,x):
+    def backward(self,dx):
         #apply derivative of tanh
-        return 4*(x.exp() + x.mul(-1).exp()).pow(-2)
+        ds =  4*(self.input.exp() + self.input.mul(-1).exp()).pow(-2)
+        return ds*dx
 
     def __str__(self):
         return "tanh"

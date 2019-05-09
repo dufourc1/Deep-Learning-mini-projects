@@ -29,8 +29,14 @@ class Sequential(Module):
         """
         #warning ! see scope of modifications and use copy if necessary
         inter = next_derivative.clone()
+        #print("BEGIN ")
         for layer in self.layers[::-1]:
-            inter = layer.backward(inter)
+            #print(inter)
+            #print(layer)
+            double_inter = layer.backward(inter)
+            #print(double_inter)
+            inter = double_inter
+        #print("END")
 
     def zero_grad(self):
         '''

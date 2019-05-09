@@ -10,40 +10,51 @@ Need for an abstract class criterion ? seems to be a double of Module then
 
 class MSE(Module):
 
-    def forward(self,input, target):
-        input = input.view(target.size())
-        return ((input-target)**2).mean()
+    def __init__(self):
+        super(MSE,self).__init__()
+        self.input = torch.empty(1)
+        self.target = torch.empty(1)
 
-    def backward(self,input, target):
+    def forward(self,output, target):
+
+        #resize to avoid automatic casting
+        output = output.view(target.size())
+        self.input = output
+        self.target = target
+        return ((output-target)**2).mean()
+
+    def backward(self):
         '''
         return the derivative of the MSE loss with respect to the target
-
         '''
-        input = input.view(target.shape)
-        derivative = 2*(input-target)/input.numel()
+        derivative = 2*(self.input-self.target)/self.input.numel()
         return derivative
 
 class CrossEntropy(Module):
 
-    def forward(self, input, target):
-        raise NotImplementedError
+    def __init__(self):
+        super(CrossEntropy,self).__init__()
+        self.input = torch.empty(1)
+        self.target = torch.empty(1)
 
-    def backward(self, input, target):
-        raise NotImplementedError
+    def forward(self, output, target):
+
+        #stabilization trick to avoid Nan:
+        #     this is equivalent to multiply and divide by -max(output) in the ratio below
+        output_stabilized = output- torch.max(output)
+        self.input = output_stabilized
+        self.target = target
+
+        #compute normalzed probabilities based on multi-class logistic classification
+        proba = torch.exp(output_stabilized[range(target.shape[0]),target])/torch.exp(output_stabilized).sum(1)
+        return -torch.log(proba).mean()
+
+    def backward(self):
+
+        inter = self.input.softmax(1)
+        inter[range(self.target.shape[0]),self.target.long()] -= 1
+        return inter/self.input.shape[0]
 
 
-
-#Not sure about this one, just in case of, should be moved
-class Precision(Module):
-    '''
-    to compute precision in percentage: #right/#total * 100
-    '''
-    def forward(self, input, target):
-        error = 0
-        for tried,true in zip(input,target):
-            if tried != true: error+=1
-
-        return (1-error/input.shape[0])*100
-
-    def backward(self, input, target):
-        raise NotImplementedError
+    def __repr__(self):
+        print("Cross Entropy Loss")

@@ -39,7 +39,8 @@ def train_model(model, train_input, train_target):
             inter = criterion.backward(output,train_target.narrow(0, b, mini_batch_size))
             model.backward(inter)
             optimizer.step()
-        print("loss at epoch {:4}: {:10.6}, difference with previous {:6.4}".format(e,loss, abs(loss-old_loss)))
+        print("loss at epoch {:4}: {:10.6}, difference with previous {:6.4}".
+                format(e,loss, abs(loss-old_loss)))
 def train_model_per_data_point(model, train_input, train_target):
     criterion = Criterion.MSE()
     optimizer = SGD(model.param(), lr = 1e-1)
@@ -57,10 +58,35 @@ def train_model_per_data_point(model, train_input, train_target):
             model.backward(inter)
             optimizer.step()
         print("loss at epoch {}: {:4}".format(e,loss))
-def generate_disc_set(nb):
+def generate_disc_set(nb, loss = "cross"):
     input = torch.Tensor(nb, 2).uniform_(-1, 1)
-    target = input.pow(2).sum(1).sub(2 / math.pi).sign().add(1).div(2)
+    if loss == "mse":
+        target = input.pow(2).sum(1).sub(2 / math.pi).sign().add(1).div(2)
+    else:
+        target = input.pow(2).sum(1).sub(2 / math.pi).sign().add(1).div(2).long()
     return input, target
+def accuracy(model,input,target):
+
+    #perform actual class prediction
+    response = model.forward(input).argmax(1)
+    error = 0
+
+    #compute the percentage of error
+    for tried,true in zip(response,target):
+        if tried.item() != true.item(): error+=1
+
+    return 1-error/response.shape[0]
+def accuracy_ref(model,input,target):
+
+    #perform actual class prediction
+    response = model.forward(input).argmax(1)
+    error = 0
+
+    #compute the percentage of error
+    for tried,true in zip(response,target):
+        if tried.item() != true.item(): error+=1
+
+    return 1-error/response.shape[0]
 
 ############################################################################################
 
@@ -68,6 +94,20 @@ def generate_disc_set(nb):
 #        but not in the all data set
 
 which_test = "sequential"
+
+x = torch.tensor([[-1.,-3.,4.],[-3.,3.,-1.]])
+y = torch.tensor([0,1])
+
+print(x.softmax(1))
+print((x-torch.max(x)).softmax(1))
+
+print("mhh")
+print(x[range(y.shape[0]),y])
+
+test = Criterion.CrossEntropy()
+print(test.forward(x,y))
+
+
 
 
 #############################################################################################
@@ -100,40 +140,46 @@ if which_test == "training":
 ##############################################################################################
 if which_test == "sequential":
 
-
+    out = 1
 
 
     #creation of model from pytorch module, with same initialization
     class test_sequential(nn.Module):
         def __init__(self):
             super(test_sequential, self).__init__()
-            self.Fc1 = nn.Linear(2, 124)
-            self.Fc2 = nn.Linear(124,45)
-            self.Fc3 = nn.Linear(45,1)
+            self.Fc1 = nn.Linear(2, 2)
+            #self.Fc2 = nn.Linear(300,100)
+            #self.Fc3 = nn.Linear(100,45)
+            self.Fc4 = nn.Linear(2,out)
 
         def forward(self, x):
             x = F.relu(self.Fc1(x))
-            x = F.relu(self.Fc2(x))
-            x = self.Fc3(x)
-            return x
+            #x = F.relu(self.Fc2(x))
+            #x = F.relu(self.Fc3(x))
+            return self.Fc4(x)
 
 
     model = test_sequential()
 
 
     #creation of model from our module to test with the same initialization as the reference model
-    fc1 = Linear(2,124)
-    fc2 = Linear(124,45)
-    fc3 = Linear(45,1)
+    fc1 = Linear(2,2)
+    #fc2 = Linear(300,100)
+    #fc3 = Linear(100,45)
+    fc4 = Linear(2,out)
     fc1.weights.value = model.Fc1.weight.data.clone()
-    fc2.weights.value = model.Fc2.weight.data.clone()
-    fc3.weights.value = model.Fc3.weight.data.clone()
+    # fc2.weights.value = model.Fc2.weight.data.clone()
+    # fc3.weights.value = model.Fc3.weight.data.clone()
+    fc4.weights.value = model.Fc4.weight.data.clone()
     fc1.bias.value = model.Fc1.bias.data.clone()
-    fc2.bias.value = model.Fc2.bias.data.clone()
-    fc3.bias.value = model.Fc3.bias.data.clone()
+    # fc2.bias.value = model.Fc2.bias.data.clone()
+    # fc3.bias.value = model.Fc3.bias.data.clone()
+    fc4.bias.value = model.Fc4.bias.data.clone()
     sigma1 = Functionnals.Relu()
     sigma2 = Functionnals.Relu()
-    test = Sequential(fc1,sigma1,fc2,sigma2,fc3)
+    sigma3 = Functionnals.Relu()
+    #test = Sequential(fc1,sigma1,fc2,sigma2,fc3,sigma3,fc4)
+    test = Sequential(fc1,sigma1,fc4)
 
     print(model)
     print(test)
@@ -141,11 +187,12 @@ if which_test == "sequential":
 
 
     #creation of dummy data_set and target
-    X,target = generate_disc_set(1000)
+    X,target = generate_disc_set(1000,"mse")
 
     #normalization
-    mean, std = X.mean(), X.std()
-    X.sub_(mean).div_(std)
+    #mean, std = X.mean(), X.std()
+    #X.sub_(mean).div_(std)
+
 
 
 
@@ -154,95 +201,100 @@ if which_test == "sequential":
     criterion_ref = nn.MSELoss()
 
     #creation of the optimizers for the two models
-    lr = 0.1
+    lr = 0.9
     optim_test = SGD(test.param(), lr = lr)
     optim_ref = torch.optim.SGD(model.parameters(), lr = lr)
 
 
     #actual training in parallel with comparison of data along the way to monitor the differences
-    nb_epochs = 100
+    nb_epochs = 200
     mini_batch_size = 100
 
 
-    #plots_evolution
-    plot_ref = []
-    plot_test = []
-
 
     #check if initialization is the same for both models
-    print("-----------------------------------difference between the initial values")
-    print("weights")
-    print(torch.max(model.Fc1.weight- fc1.weights.value))
-    print(torch.max(model.Fc2.weight- fc2.weights.value))
-    print(torch.max(model.Fc3.weight- fc3.weights.value))
-    print("biases")
-    print(torch.max(model.Fc1.bias- fc1.bias.value))
-    print(torch.max(model.Fc2.bias- fc2.bias.value))
-    print(torch.max(model.Fc3.bias- fc3.bias.value))
+    # print("-----------------------------------difference between the initial values")
+    # print("weights")
+    # print(torch.max(model.Fc1.weight- fc1.weights.value))
+    # print(torch.max(model.Fc2.weight- fc2.weights.value))
+    # print(torch.max(model.Fc3.weight- fc3.weights.value))
+    # print("biases")
+    # print(torch.max(model.Fc1.bias- fc1.bias.value))
+    # print(torch.max(model.Fc2.bias- fc2.bias.value))
+    # print(torch.max(model.Fc3.bias- fc3.bias.value))
 
     for e in range(nb_epochs):
         loss_epoch_test = 0
         loss_epoch_ref = 0
-        print("-----------------------------------------------------------------  epoch {}".format(e))
+        #print("-----------------------------------------------------------------  epoch {}".format(e))
         for b in range(0, X.size(0), mini_batch_size):
 
-            input_narrow = X.narrow(0, b, mini_batch_size)
-
-            #my framework
-            output_test = test.forward(input_narrow)
-            loss_test = criterion_test.forward(output_test, target.narrow(0, b, mini_batch_size))
-            plot_test.append(loss_test)
-            loss_epoch_test += loss_test
-            test.zero_grad()
-            inter_test = criterion_test.backward(output_test,target.narrow(0, b, mini_batch_size))
-            test.backward(inter_test)
-            optim_test.step()
-
+            input_narrow_test = X.narrow(0, b, mini_batch_size)
+            input_narrow_ref = input_narrow_test.clone()
 
             #the reference framework
-            output_ref = model(input_narrow)
+            output_ref = model(input_narrow_ref)
+            # if e>1:
+            #     print(torch.max(old_ref-output_ref).item())
+            old_ref = output_ref
             loss_ref = criterion_ref(output_ref, target.narrow(0, b, mini_batch_size))
-            plot_ref.append(loss_ref)
             loss_epoch_ref += loss_ref
             model.zero_grad()
             loss_ref.backward()
             optim_ref.step()
 
 
+            #my framework
+            output_test = test.forward(input_narrow_test)
+            # if e>1:
+            #     print(torch.max(output_test-old).item())
+            old = output_test
+            #print(torch.cat([output_ref.t(),output_test.t()]))
+            loss_test = criterion_test.forward(output_test, target.narrow(0, b, mini_batch_size))
+            #print(loss_test)
+            loss_epoch_test += loss_test
+            test.zero_grad()
+            inter_test = criterion_test.backward(output_test,target.narrow(0, b, mini_batch_size))
+            test.backward(inter_test)
+
+            # for param in test.param():
+            #     print(torch.max(param.grad))
+            #     param.value -= lr*param.grad
+            optim_test.step()
+
+        print("epoch {:4}, loss_ref {:9.9}, loss_test {:9.9}".
+                format(e,loss_epoch_ref,loss_epoch_test))
+
+        predicted_test = accuracy(test,X,target)
+        predicted_ref = accuracy_ref(model,X,target)
+        print("precision ref {:.4%}, precision test {:.4%}".format(predicted_ref,predicted_test))
 
 
 
 
-        print("")
-        print("----------------------------------- global evolution")
-        print("My framework loss at epoch {:4}: {:10.6}".format(e,loss_epoch_test))
-        print("The ref      loss at epoch {:4}: {:10.6}".format(e,loss_epoch_ref))
-        print("----------------------------------- comparison of output")
-        print(torch.max(test.forward(X[0:200,:])-model(X[0:200,:])))
-
-        print("-----------------------------------differences between the loss")
-        print(torch.max(loss_epoch_test-loss_epoch_ref))
-        print("-----------------------------------difference between the gradients")
-        print("weights")
-        print(torch.max(model.Fc1.weight.grad- fc1.weights.grad))
-        print(torch.max(model.Fc2.weight.grad- fc2.weights.grad))
-        print(torch.max(model.Fc3.weight.grad- fc3.weights.grad))
-        print("biases")
-        print(torch.max(model.Fc1.bias.grad- fc1.bias.grad))
-        print(torch.max(model.Fc2.bias.grad- fc2.bias.grad))
-        print(torch.max(model.Fc3.bias.grad- fc3.bias.grad))
 
 
-    import matplotlib.pyplot as plt
-    import numpy as np
-    plt.plot(plot_test, label = "test", marker = ".")
-    plt.plot(plot_ref, label = "ref", marker = ".")
-    plt.legend()
-    plt.show()
-    plt.plot(np.array(plot_test)-np.array(plot_ref), label = "diff", marker = ".")
-    plt.plot(np.array(plot_test)/np.array(plot_ref), label = "ratio", marker = ".")
-    plt.legend()
-    plt.show()
+        # print("")
+        # print("----------------------------------- global evolution")
+        # print("My framework loss at epoch {:4}: {:10.6}".format(e,loss_epoch_test))
+        # print("The ref      loss at epoch {:4}: {:10.6}".format(e,loss_epoch_ref))
+        # print("----------------------------------- comparison of output")
+        # print(torch.max(test.forward(X[0:200,:])-model(X[0:200,:])))
+        #
+        # print("-----------------------------------differences between the loss")
+        # print(torch.max(loss_epoch_test-loss_epoch_ref))
+        # print("-----------------------------------difference between the gradients")
+        # print("weights")
+        # print(torch.max(model.Fc1.weight.grad- fc1.weights.grad))
+        # print(torch.max(model.Fc2.weight.grad- fc2.weights.grad))
+        # print(torch.max(model.Fc3.weight.grad- fc3.weights.grad))
+        # print("biases")
+        # print(torch.max(model.Fc1.bias.grad- fc1.bias.grad))
+        # print(torch.max(model.Fc2.bias.grad- fc2.bias.grad))
+        # print(torch.max(model.Fc3.bias.grad- fc3.bias.grad))
+
+
+
 
 ###############################################################################################
 if which_test == "gradient linear":
