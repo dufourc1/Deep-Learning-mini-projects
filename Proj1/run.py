@@ -1,7 +1,9 @@
 import torch
 from dlc_practical_prologue import generate_pair_sets
 from ResNet import ResNet
-from CNN import SimpleConv
+from CNN import SimpleConv, SimpleConv2
+from FullyConnected import Net2
+
 
 def test(input_train, target_train, classes_train, input_test, target_test, classes_test,\
  model, epochs = 150, batch_size = 250, device = 'cpu'):
