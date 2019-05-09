@@ -43,7 +43,33 @@ input_train, target_train, classes_train, input_test, target_test, classes_test 
 nb_epochs, batch_size = 25, 250
 device = 'cpu'
 
+print('Model : Convolution and max-pool layer')
 model = SimpleConv()
-
 test(input_train, target_train, classes_train,\
         input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
+
+print('Model : Convolution and max-pool layer other formulation')
+model = SimpleConv2()
+test(input_train, target_train, classes_train,\
+        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
+nb_epochs = 50
+print('Model : Fully Conected layers (no dropout)')
+model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2)
+test(input_train, target_train, classes_train,\
+        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
+print('Model : Fully Conected layers with dropout (\t)', dropout)
+dropout = 0.25
+model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout)
+test(input_train, target_train, classes_train,\
+        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
+print('Model : Fully Conected layers with dropout (\t) and batch normalization', dropout)
+model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
+test(input_train, target_train, classes_train,\
+        input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
+
+
+
