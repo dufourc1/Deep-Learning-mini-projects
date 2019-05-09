@@ -68,8 +68,9 @@ def test(model, mean=True, n_trials = 5, device=None):
             Accuracy_te.append(this_Accuracy_te)
 
     with torch.no_grad():
-        print('\n Cross Entropy Loss on TRAIN :\t', torch.tensor(CELoss_tr).mean().item(), u"\u00B1", torch.tensor(CELoss_tr).std().item(), ' \n\
-        Cross Entropy Loss on TEST :\t', torch.tensor(CELoss_te).mean().item(), u"\u00B1", torch.tensor(CELoss_te).std().item(),'\n\
-        Accuracy score on TRAIN :\t', torch.tensor(Accuracy_tr).mean().item(), u"\u00B1", torch.tensor(Accuracy_tr).std().item(),'\n\
-        Accuracy score on TEST :\t', torch.tensor(Accuracy_te).mean().item(), u"\u00B1", torch.tensor(Accuracy_te).std().item())
+        print('\n\
+    Cross Entropy Loss on TRAIN :\t', torch.tensor(CELoss_tr).mean().item(), u"\u00B1", torch.tensor(CELoss_tr).std().item(), ' \n\
+    Cross Entropy Loss on TEST :\t', torch.tensor(CELoss_te).mean().item(), u"\u00B1", torch.tensor(CELoss_te).std().item(),'\n\
+    Accuracy score on TRAIN :\t', torch.tensor(Accuracy_tr).mean().item(), u"\u00B1", torch.tensor(Accuracy_tr).std().item(),'\n\
+    Accuracy score on TEST :\t', torch.tensor(Accuracy_te).mean().item(), u"\u00B1", torch.tensor(Accuracy_te).std().item())
     return model
