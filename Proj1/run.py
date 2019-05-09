@@ -10,7 +10,7 @@ from ResNet import ResNet
 ################################################################################
 parser = argparse.ArgumentParser(description='Reproduction of our results for Project 1')
 
-parser.add_argument('model', type=str, default='NoModel',
+parser.add_argument('-m', '--model', type=str, default='NoModel',
                     help = 'The model to be tested.')
 
 args = parser.parse_args()

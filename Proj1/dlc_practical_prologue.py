@@ -10,7 +10,7 @@ import os
 parser = argparse.ArgumentParser(description='DLC prologue file for practical sessions.')
 
 #William's fix to parse somewhere else too
-parser.add_argument('dummy', type=str, default=False,
+parser.add_argument('-m', '--model', type=str, default=None,
                     help = "I'm just here because I have to.")
 
 parser.add_argument('--full',
