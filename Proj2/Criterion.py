@@ -41,12 +41,13 @@ class CrossEntropy(Module):
 
         #stabilization trick to avoid Nan:
         #     this is equivalent to multiply and divide by -max(output) in the ratio below
-        output_stabilized = output- torch.max(output)
-        self.input = output_stabilized
+        self.input = output
         self.target = target
 
         #compute normalzed probabilities based on multi-class logistic classification
-        proba = torch.exp(output_stabilized[range(target.shape[0]),target])/torch.exp(output_stabilized).sum(1)
+        proba = self.input.softmax(1)
+        #proba = torch.exp(self.input[range(target.shape[0]),target])/torch.exp(self.input).sum(1)
+        proba = proba[range(target.shape[0]),target]
         return -torch.log(proba).mean()
 
     def backward(self):

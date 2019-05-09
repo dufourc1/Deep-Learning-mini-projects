@@ -107,8 +107,6 @@ if False:
 
 
 'evidence of difference of the order of 1e-16 and 1e-17'
-
-
 ################################################################################
 'test for Linear'
 if False:
@@ -174,7 +172,7 @@ if False:
     print("mean error for grad b   {}".format(mean_grad_b_diff/number_tests))
 
 ################################################################################
-'test for Linear'
+'test for sequential'
 if True:
     print('test for Sequential')
 
