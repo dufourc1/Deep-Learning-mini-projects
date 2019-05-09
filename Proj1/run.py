@@ -51,7 +51,7 @@ test(input_train, target_train, classes_train,\
         input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
 
 
-print('Model 2 : Convolution and max-pool layer other formulation')
+print('Model 2 : Convolution and max-pool layer (other formulation)')
 model = SimpleConv2()
 test(input_train, target_train, classes_train,\
         input_test, target_test, classes_test, model, epochs = nb_epochs, batch_size = batch_size, device = device)
