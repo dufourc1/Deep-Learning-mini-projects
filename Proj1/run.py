@@ -1,10 +1,13 @@
 # RUN :
+import torch
+from dlc_practical_prologue import generate_pair_sets
+from CNN import Net
+
 input_train, target_train, classes_train, input_test, target_test, classes_test = generate_pair_sets(1000)
 
 lr, nb_epochs, batch_size = 10e-3, 25, 250
 
-#model = ResNet(nb_channels=50, kernel_size=5, nb_blocks=7)
-model = Net2(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2)
+model = Net(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2)
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(),lr)
 
