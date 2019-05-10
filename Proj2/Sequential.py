@@ -60,7 +60,7 @@ class Sequential(Module):
     def __str__(self):
         result = "Sequential("
         for layer in self.layers:
-            result += "\n "
+            result += "\n    "
             result += layer.__str__()
         result += "\n)"
         return result

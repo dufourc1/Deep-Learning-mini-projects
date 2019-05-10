@@ -11,7 +11,7 @@ class Linear(Module):
 
     def __init__(self, input_size, output_size):
         super(Linear,self).__init__()
-        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.float32).uniform_())
+        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.float32).normal_(0,1e-0))
         self.bias = Parameters(torch.zeros(output_size,dtype=torch.float32))
         self.result = Parameters(torch.empty(output_size,dtype=torch.float32))
         self.input = Parameters(torch.empty(input_size,dtype=torch.float32))
@@ -67,10 +67,12 @@ class Linear(Module):
         """
 
 
-
         #add a new dimension if necessary so that the derivative is a matrix not a vector
         if len(next_derivative.shape) == 1:
-            next_derivative = next_derivative.view(1,next_derivative.shape[0])
+            if self.weights.value.shape[0] == 1:
+                next_derivative = next_derivative.view(next_derivative.shape[0],1)
+            else:
+                next_derivative = next_derivative.view(1,next_derivative.shape[0])
         if len(self.input.value.shape) == 1:
             x_i = self.input.value.view(1,self.input.value.shape[0])
         else:
