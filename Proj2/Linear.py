@@ -3,18 +3,18 @@ from Module import Module
 from Param import Parameters
 
 
-# TODO: self.result is not usefull and should be discarded
-
+import sys
 
 class Linear(Module):
 
 
     def __init__(self, input_size, output_size):
         super(Linear,self).__init__()
-        self.weights = Parameters(torch.empty(output_size,input_size,dtype=torch.float32).normal_(0,1e-0))
-        self.bias = Parameters(torch.zeros(output_size,dtype=torch.float32))
-        self.result = Parameters(torch.empty(output_size,dtype=torch.float32))
-        self.input = Parameters(torch.empty(input_size,dtype=torch.float32))
+        type = torch.float32
+        self.weights = Parameters(torch.empty(output_size,input_size,dtype= type).normal_(0,1e-0))
+        self.bias = Parameters(torch.zeros(output_size,dtype=type))
+        self.result = Parameters(torch.empty(output_size,dtype=type))
+        self.input = Parameters(torch.empty(input_size,dtype=type))
 
     def forward(self,x):
         """perform the forward pass for a fully connected linear layer of sizes input_size -> output_size
@@ -29,7 +29,6 @@ class Linear(Module):
         torch float64 tensor
             result of the forward pass of dimension [number_of_training_points,output_size]
         """
-
 
 
         #we check if we have a single datapoint entry, in which case we do not have to worry about the dimensions
@@ -50,13 +49,13 @@ class Linear(Module):
 
 
 
-    def backward(self, next_derivative):
+    def backward(self, derivative):
         """ backward operation for fully connected layer
 
         Parameters
         ----------
-        next_derivative : tensor
-            supposing the layer returns x_(i+1) and takes as input x_i, next_derivative
+        derivative : tensor
+            supposing the layer returns x_(i+1) and takes as input x_i, derivative
             is dloss/dx_(i+1)
 
         Returns
@@ -66,13 +65,12 @@ class Linear(Module):
 
         """
 
-
         #add a new dimension if necessary so that the derivative is a matrix not a vector
-        if len(next_derivative.shape) == 1:
+        if len(derivative.shape) == 1:
             if self.weights.value.shape[0] == 1:
-                next_derivative = next_derivative.view(next_derivative.shape[0],1)
+                derivative = derivative.view(derivative.shape[0],1)
             else:
-                next_derivative = next_derivative.view(1,next_derivative.shape[0])
+                derivative = derivative.view(1,derivative.shape[0])
         if len(self.input.value.shape) == 1:
             x_i = self.input.value.view(1,self.input.value.shape[0])
         else:
@@ -84,20 +82,32 @@ class Linear(Module):
         # print("input was of size {}".format(self.input.value.shape))
 
         # derivative with respect to the weights: dloss/dw
-        self.weights.grad += torch.mm(next_derivative.t(),x_i)
-        # if torch.max(self.weights.grad).item() ==0:
-        #     print("INDICATION OF VANISHING GRADIENT")
-        #     print(self)
-        #     print(torch.max(self.input.value),torch.max(next_derivative))
+        self.weights.grad += torch.mm(derivative.t(),x_i)
 
         #derivative with respect to the bias: dloss/dbias
-        self.bias.grad += torch.sum(next_derivative.t(), dim=1)
+        self.bias.grad += derivative.sum(0)
+
 
         #derivative if the loss with respect to the input of the layer:  dloss/dx_i pass it to the next layer
-        new_next_derivative = torch.mm(next_derivative,self.weights.value)
+        next_derivative = torch.mm(derivative,self.weights.value)
 
+        # if (derivative != derivative).sum().item() > 0:
+        #     print("derivative passed to {}, issue nan detected".format(self))
+        #     print(self.input.value)
+        #     print(self.weights.value)
+        #     print(self.bias.value)
+        #     print(derivative)
+        #     sys.exit()
+        #
+        # if (next_derivative != next_derivative).sum().item() > 0:
+        #     print("derivative output of {}".format(self))
+        #     print(self.input.value)
+        #     print(self.weights.value)
+        #     print(self.bias.value)
+        #     print(next_derivative)
+        #     sys.exit()
         # return dloss/dx_i so that it can be passed to the next layer
-        return new_next_derivative
+        return next_derivative
 
 
     def zero_grad(self):

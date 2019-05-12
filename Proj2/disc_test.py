@@ -7,10 +7,10 @@ import math
 import time
 import sys
 
-# from torch import optim
-# from torch import Tensor
-# from torch.autograd import Variable
-# from torch import nn
+from torch import optim
+from torch import Tensor
+from torch.autograd import Variable
+from torch import nn
 
 
 from Sequential import Sequential
@@ -20,6 +20,7 @@ import Optimizer
 import Criterion
 
 
+torch.set_default_dtype(torch.float32)
 
 ######################################################################
 
@@ -69,25 +70,19 @@ def update_progress(progress,message=""):
 ######################################################################
 
 
-# def train_model(model, train_input, train_target):
-#     start = time.time()
-#     criterion = nn.CrossEntropyLoss()
-#     optimizer = optim.SGD(model.parameters(), lr = 1e-1)
-#     nb_epochs = 100
-#     time_opti = 0
-#     for e in range(nb_epochs):
-#         for b in range(0, train_input.size(0), mini_batch_size):
-#             output = model(train_input.narrow(0, b, mini_batch_size))
-#             loss = criterion(output, train_target.narrow(0, b, mini_batch_size))
-#             model.zero_grad()
-#             loss.backward()
-#             start_opti = time.time()
-#             optimizer.step()
-#             time_opti += time.time()-start_opti
-#     end = time.time()
-#     print("time: {:5.3}s".format(end-start))
-#     print("mean_time_optimizer step {:5.3}s".format(time_opti/(e*e/b)))
-#
+def train_model(model, train_input, train_target):
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr = 1e-1)
+    nb_epochs = 100
+    for e in range(nb_epochs):
+        for b in range(0, train_input.size(0), mini_batch_size):
+            output = model(train_input.narrow(0, b, mini_batch_size))
+            loss = criterion(output, train_target.narrow(0, b, mini_batch_size))
+            model.zero_grad()
+            loss.backward()
+            optimizer.step()
+        #update_progress((e+1.)/nb_epochs)
+
 
 def train_model_test(model,train_input,train_target, nb_epochs = 20):
     criterion = Criterion.CrossEntropy()
@@ -101,7 +96,7 @@ def train_model_test(model,train_input,train_target, nb_epochs = 20):
             inter = criterion.backward()
             model.backward(inter)
             optimizer.step()
-        update_progress((e+1.)/nb_epochs)
+        #update_progress((e+1.)/nb_epochs)
 ######################################################################
 
 def compute_nb_errors(model, data_input, data_target):
@@ -116,38 +111,43 @@ def compute_nb_errors(model, data_input, data_target):
                 nb_data_errors = nb_data_errors + 1
 
     return nb_data_errors
-##########################################################################
-# print("-------------------------------- Pytorch nn module --------------------")
-# errors_train = []
-# errors_test = []
-# for k in range(10):
-#     model = create_shallow_model()
-#
-#     std = 1e-0
-#     for p in model.parameters(): p.data.normal_(0, std)
-#
-#     train_model(model, train_input, train_target)
-#     errors_train.append(compute_nb_errors(model, train_input, train_target)/ test_input.size(0) * 100)
-#     errors_test.append(compute_nb_errors(model, test_input, test_target) / test_input.size(0) * 100)
-#
-# print('train_error {:.02f}%  std {:.02f} \n test_error {:.02f}%  std {:.02f}'.format(
-# torch.tensor(errors_train).mean(),torch.tensor(errors_train).std(),
-# torch.tensor(errors_test).mean(),torch.tensor(errors_test).std(),
-# )
-# )
+#########################################################################
+
+N = 10
+
+
+print("-------------------------------- Pytorch nn module --------------------")
+errors_train = []
+errors_test = []
+for k in range(N):
+    model =  nn.Sequential(nn.Linear(2,128),nn.ReLU(),nn.Linear(128,2))
+
+    std = 1e-0
+    for p in model.parameters(): p.data.normal_(0, std)
+
+    train_model(model, train_input, train_target)
+    errors_train.append(compute_nb_errors(model, train_input, train_target)/ test_input.size(0) * 100)
+    errors_test.append(compute_nb_errors(model, test_input, test_target) / test_input.size(0) * 100)
+    update_progress((k+1.)/N)
+
+print('train_error {:.02f}%  std {:.02f} \n test_error {:.02f}%  std {:.02f}'.format(
+torch.tensor(errors_train).mean(),torch.tensor(errors_train).std(),
+torch.tensor(errors_test).mean(),torch.tensor(errors_test).std(),
+)
+)
 
 print("-------------------------------- my stupid  module --------------------")
 errors_train = []
 errors_test = []
-for k in range(10):
+for k in range(N):
     model = Sequential(Linear(2,128),Relu(),Linear(128,2))
+    std = 1e-0
+    for p in model.param(): p.value.normal_(0, std)
 
-    #std = 1e-0
-    #for p in model.param(): p.value.normal_(0, std)
-
-    train_model_test(model, train_input, train_target, nb_epochs = 400)
+    train_model_test(model, train_input, train_target)
     errors_train.append(compute_nb_errors(model.forward, train_input, train_target)/ test_input.size(0) * 100)
     errors_test.append(compute_nb_errors(model.forward, test_input, test_target) / test_input.size(0) * 100)
+    update_progress((k+1.)/N)
 
 print('train_error {:.02f}%  std {:.02f} \n test_error {:.02f}%  std {:.02f}'.format(
 torch.tensor(errors_train).mean(),torch.tensor(errors_train).std(),

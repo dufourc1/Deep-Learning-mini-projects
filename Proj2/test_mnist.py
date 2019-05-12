@@ -17,14 +17,17 @@ from Functionnals import Relu
 import Optimizer
 import Criterion
 
+torch.set_default_dtype(torch.float32)
+
+
 ################################################################################
 #load the data
 train_input, train_target, test_input, test_target = \
     prologue.load_data(one_hot_labels = False, normalize = True, flatten = False)
 
 #reshape them to pass them to a linear neural network
-train_input = train_input.view(train_input.shape[0],28*28)
-test_input = train_input.view(test_input.shape[0],28*28)
+train_input = train_input.view(train_input.shape[0],28*28).type(torch.float32)
+test_input = train_input.view(test_input.shape[0],28*28).type(torch.float32)
 
 #normalize the input
 mean, std = train_input.mean(), train_input.std()

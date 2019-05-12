@@ -26,7 +26,6 @@ class Relu(Module):
         inter = torch.max(self.input, torch.zeros_like(self.input))
         inter[inter <= 0.] = 0.
         inter[inter > 0.] = 1.
-
         #return hadamard product
         return inter*dx
 

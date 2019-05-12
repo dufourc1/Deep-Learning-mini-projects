@@ -27,7 +27,6 @@ class Sequential(Module):
             derivative of the loss with respect to the output of the sequential model
 
         """
-        #warning ! see scope of modifications and use copy if necessary
         inter = next_derivative.clone()
         #print("BEGIN ")
         for layer in self.layers[::-1]:

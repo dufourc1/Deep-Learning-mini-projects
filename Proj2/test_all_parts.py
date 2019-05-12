@@ -18,11 +18,11 @@ from Functionnals import Tanh
 ################################################################################
 number_tests = 1000
 # have to precise the type of tensor otherwise gonna be issues
-torch.set_default_dtype(torch.double)
+torch.set_default_dtype(torch.float32)
 ################################################################################
 
 'test for MSE function'
-if False:
+if True:
     print('test for MSE function')
     MSE_test = Criterion.MSE()
     MSE_ref = nn.MSELoss()
@@ -32,10 +32,12 @@ if False:
 
     mean_error = 0
     mean_grad_diff = 0
+    losses_ref = []
+    losses_test = []
 
     for i in range(number_tests):
-        x_test = torch.empty(n1,n2).maxal_(10)
-        y_test = torch.empty(n1,n2).maxal_(3)
+        x_test = torch.empty(n1,n2).normal_(10)
+        y_test = torch.empty(n1,n2).normal_(3)
 
         x_ref = x_test.clone()
         y_ref = y_test.clone()
@@ -44,12 +46,16 @@ if False:
         loss_ref = MSE_ref(x_ref,y_ref)
         loss_test = MSE_test.forward(x_test,y_test)
 
+        losses_ref.append(loss_ref)
+        losses_test.append(loss_test)
+
         diff_loss = torch.max(loss_ref-loss_test)
+
 
         if diff_loss > torch.tensor([0.]):
             mean_error += diff_loss
 
-        derivative_test = MSE_test.backward(x_test,y_test)
+        derivative_test = MSE_test.backward()
         x_ref.grad = None
         loss_ref.backward()
         derivative_ref = x_ref.grad
@@ -67,7 +73,7 @@ if False:
 ################################################################################
 
 'test for Cross entropy loss'
-if False:
+if True:
     print('test for Cross entropy loss')
     MSE_test = Criterion.CrossEntropy()
     MSE_ref = nn.CrossEntropyLoss()
@@ -79,8 +85,8 @@ if False:
     mean_grad_diff = 0
 
     for i in range(number_tests):
-        x_test = torch.empty(n1,n2).maxal_(10)
-        y_test = torch.LongTensor(10).random_(0, 5)
+        x_test = torch.empty(n1,n2).normal_(10)
+        y_test = torch.LongTensor(n1).random_(0, 5)
 
         x_ref = x_test.clone()
         y_ref = y_test.clone()
@@ -94,7 +100,7 @@ if False:
         if diff_loss > torch.tensor([0.]):
             mean_error += diff_loss
 
-        derivative_test = MSE_test.backward(x_test,y_test)
+        derivative_test = MSE_test.backward()
         x_ref.grad = None
         loss_ref.backward()
         derivative_ref = x_ref.grad
@@ -107,10 +113,11 @@ if False:
     print("mean error for gradient {:.15}".format(mean_grad_diff/number_tests))
 
 
+
 'evidence of difference of the order of 1e-16 and 1e-17'
 ################################################################################
 'test for Linear'
-if False:
+if True:
     print('test for Linear')
 
     n1 = 10
@@ -135,7 +142,7 @@ if False:
         test.bias.value = ref.bias.data.clone()
 
         #building the summy datasets
-        x_test = torch.empty(n1).maxal_(10)
+        x_test = torch.empty(n1).normal_(10)
         y_test = torch.empty(n2).random_(0, 5)
         x_ref = x_test.clone()
         y_ref = y_test.clone()
@@ -156,7 +163,7 @@ if False:
         test.zero_grad()
         ref.zero_grad()
         loss_ref.backward()
-        inter = criterion_test.backward(output_test,y_test)
+        inter = criterion_test.backward()
         test.backward(inter)
 
         grad_w_ref = ref.weight.grad
