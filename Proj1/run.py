@@ -115,6 +115,7 @@ n_trials = 10
 model_maker = model_makers.get(args.model)
 infos = model_infos.get(args.model, '')
 
-test(model_maker, n_trials =n_trials, lr= model_lrs[args.model], infos= infos,)
+test(model_maker, n_trials =n_trials, lr= model_lrs[args.model], infos= infos, output_file= args.output)
 if args.model.find('siamese') >= 0:
-    test(model_maker, n_trials = n_trials, lr = model_lrs[args.model], infos= infos, auxiliary= True)
+    test(model_maker, n_trials = n_trials, lr = model_lrs[args.model],
+            infos= infos, auxiliary= True, output_file= args.output)
