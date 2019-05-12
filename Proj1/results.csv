@@ -1,4 +1,6 @@
 ModelName;meanCELoss_tr;stdCELoss_tr;meanCELoss_te;stdCELoss_te;meanAccuracy_tr;stdAccuracy_tr;meanAccuracy_te;stdAccuracy_tr
-FullyConnected;0.3828;0.08021;0.7277;0.4384;0.8326;0.04884;0.7491;0.03092
-BasicConvolutional;0.6931;0.0;0.6931;0.0;0.4478;0.01689;0.4522;0.01666
-BasicFullyConvolutional;0.1542;0.01142;0.4893;0.02262;0.9864;0.005602;0.7989;0.01241
+FullyConnected;5.586e-05;3.135e-05;1.265;0.159;1.0;0.0;0.7985;0.0154
+BasicConvolutional;0.2421;0.202;0.6625;0.05648;0.8603;0.1533;0.7155;0.1072
+BasicFullyConvolutional;0.16;0.006156;0.5589;0.02284;0.9865;0.002915;0.7521;0.01256
+DropoutFullyConnected;0.002824;0.001225;1.03;0.1706;0.9995;0.0007071;0.8017;0.01489
+ResNet;0.006348;0.006954;0.6542;0.08284;0.9999;0.0003162;0.8183;0.01554

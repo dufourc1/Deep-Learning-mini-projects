@@ -13,6 +13,10 @@ parser = argparse.ArgumentParser(description='DLC prologue file for practical se
 parser.add_argument('-m', '--model', type=str, default=None,
                     help = "I'm just here because I have to.")
 
+parser.add_argument('-o', '--output', type=str, default=None,
+                    help = 'The output file where to save the results. If deafults print results on screen.')
+
+
 parser.add_argument('--full',
                     action='store_true', default=False,
                     help = 'Use the full set, can take ages (default False)')
@@ -32,6 +36,7 @@ parser.add_argument('--cifar',
 parser.add_argument('--data_dir',
                     type = str, default = None,
                     help = 'Where are the PyTorch data located (default $PYTORCH_DATA_DIR or \'./data\')')
+
 
 # Timur's fix
 parser.add_argument('-f', '--file',

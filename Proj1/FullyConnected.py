@@ -46,7 +46,7 @@ class layer_with_bn(nn.Module):
         return x
 
 # no dropout if drop = 0.0, a good value to try can be 0.5, 0.25
-class Net2(nn.Module):
+class DropoutFullyConnected(nn.Module):
     def __init__(self, nodes_in, nodes_hidden, nodes_out, n_hidden, drop = 0.0, with_batchnorm = False):
         super(Net2, self).__init__()
         if with_batchnorm:
@@ -62,3 +62,5 @@ class Net2(nn.Module):
     def forward(self, x):
         x = x.view(x.size(0), -1)
         return self.net(x)
+
+Net2 = DropoutFullyConnected

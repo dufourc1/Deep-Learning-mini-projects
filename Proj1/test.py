@@ -22,7 +22,7 @@ def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name='N
          torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item()))
     print('\n')
 
-def test(model, mean=True, n_trials = 5, device=None, output_file= None):
+def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=50, batch_size =250):
 
     if device is None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -35,6 +35,7 @@ def test(model, mean=True, n_trials = 5, device=None, output_file= None):
     Accuracy_tr = []
     Accuracy_te = []
 
+    model = model_maker()
     model_name = type(model).__name__
 
     print('Training {}:'.format(model_name))
@@ -44,8 +45,7 @@ def test(model, mean=True, n_trials = 5, device=None, output_file= None):
 
         criterion = torch.nn.CrossEntropyLoss()
 
-        lr, nb_epochs, batch_size = 10e-3, 50, 250
-
+        model = model_maker()
         model = model.to(device)
         criterion = criterion.to(device)
 
