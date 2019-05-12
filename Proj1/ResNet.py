@@ -27,7 +27,7 @@ class ResBlock(nn.Module):
         return y
 
 class ResNet(nn.Module):
-    def __init__(self, nb_channels, kernel_size, nb_blocks, in_channels = 2, out_channels =10):
+    def __init__(self, nb_channels, kernel_size, nb_blocks, in_channels = 2, out_channels =2):
         super(ResNet, self).__init__()
         self.conv0 = nn.Conv2d(in_channels, nb_channels, kernel_size = 1)
         self.resblocks = nn.Sequential(*(ResBlock(nb_channels, kernel_size) for _ in range(nb_blocks)))

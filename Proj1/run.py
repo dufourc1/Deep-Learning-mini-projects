@@ -8,6 +8,7 @@ from test import test
 from FullyConnected import FullyConnected, DropoutFullyConnected
 from BasicConvolutional import BasicConvolutional, BasicFullyConvolutional
 from ResNet import ResNet
+from SiameseNet import SiameseNet
 
 ################################################################################
 parser = argparse.ArgumentParser(description='Reproduction of our results for Project 1')
@@ -43,9 +44,16 @@ def make_DropoutFullyConnected():
     dropout = 0.25
     return DropoutFullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout)
 
+def make_DropoutFullyConnectedBatchNorm():
+    dropout = 0.25
+    return DropoutFullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
 
 def make_ResNet():
     return ResNet(nb_channels=27, kernel_size=5, nb_blocks=7)
+
+def make_SiameseResNet():
+    return SiameseNet(branch = ResNet(nb_channels=12, kernel_size=5, nb_blocks=3, in_channels = 1, out_channels = 10))
+
 
 model_makers = {'all': None,
             'NoModel': no_model,
@@ -53,15 +61,24 @@ model_makers = {'all': None,
             'basicconv': make_BasicConv,
             'basicfullyconv': make_BasicFullyConv,
             'dropoutfc': make_DropoutFullyConnected,
-            'resnet': make_ResNet}
+            'dropoutfcbn': make_DropoutFullyConnectedBatchNorm,
+            'resnet': make_ResNet,
+            'siamese': SiameseNet,
+            'siameseresnet': make_SiameseResNet}
 
 model_lrs = {'all': None,
             'NoModel': no_model,
             'fcnn': 1e-3,
-            'basicconv': 1e-4,
-            'basicfullyconv': 1e-3,
+            'basicconv': 2e-4,
+            'basicfullyconv': 7e-4,
             'dropoutfc': 2e-4,
-            'resnet': 2e-3}
+            'dropoutfcbn': 2e-4,
+            'resnet': 1e-3,
+            'siamese': 5e-3,
+            'siameseresnet': 5e-3}
+
+model_infos = {'dropoutfcbn': 'BatchNorm',
+                'siameseresnet': 'ResNet'}
 
 def run_all(output = None):
     n_trials = 10
@@ -70,7 +87,7 @@ def run_all(output = None):
 
     if output is not None:
         with open(output, 'w') as f:
-            f.write(';'.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
+            f.write(','.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
              'meanCELoss_te', 'stdCELoss_te',
              'meanAccuracy_tr', 'stdAccuracy_tr',
              'meanAccuracy_te', 'stdAccuracy_tr')) + '\n')
@@ -79,7 +96,10 @@ def run_all(output = None):
     del model_makers['NoModel']
 
     for _, model_maker in model_makers.items():
-        test(model_maker, n_trials = n_trials, output_file= output, lr = model_lrs[_])
+        infos = model_infos.get(_, '')
+        test(model_maker, n_trials = n_trials, output_file= output, lr = model_lrs[_], infos= infos)
+        if _.find('siamese') >= 0:
+            test(model_maker, n_trials = n_trials, output_file= output, lr = model_lrs[_], infos= infos, auxiliary= True)
 
     exit()
 
@@ -91,6 +111,10 @@ if model_makers.get(args.model) is None:
     print("Invalid model")
     exit(1)
 
+n_trials = 10
 model_maker = model_makers.get(args.model)
+infos = model_infos.get(args.model, '')
 
-test(model_maker, n_trials =10, lr= model_lrs[args.model])
+test(model_maker, n_trials =n_trials, lr= model_lrs[args.model], infos= infos,)
+if args.model.find('siamese') >= 0:
+    test(model_maker, n_trials = n_trials, lr = model_lrs[args.model], infos= infos, auxiliary= True)

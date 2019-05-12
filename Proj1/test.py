@@ -1,6 +1,7 @@
 import torch
 
 from dlc_practical_prologue import generate_pair_sets
+from SiameseNet import split_channels
 
 def nn_accuracy_score(model, X, y):
     with torch.no_grad():
@@ -16,13 +17,13 @@ def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name='N
         return
 
     with open(output, 'a') as f:
-        f.write('{};{:.4};{:.4};{:.4};{:.4};{:.4};{:.4};{:.4};{:.4}\n'.format(model_name, torch.tensor(CELoss_tr).mean().item(), torch.tensor(CELoss_tr).std().item(),
+        f.write('{},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4}\n'.format(model_name, torch.tensor(CELoss_tr).mean().item(), torch.tensor(CELoss_tr).std().item(),
          torch.tensor(CELoss_te).mean().item(), torch.tensor(CELoss_te).std().item(),
          torch.tensor(Accuracy_tr).mean().item(), torch.tensor(Accuracy_tr).std().item(),
          torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item()))
     print('\n')
 
-def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=50, batch_size =250):
+def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=75, batch_size =250, infos='', auxiliary= False):
 
     if device is None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,7 +37,10 @@ def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, l
     Accuracy_te = []
 
     model = model_maker()
-    model_name = type(model).__name__
+    model_name = type(model).__name__ + infos
+
+    if type(model).__name__ == 'SiameseNet' and auxiliary:
+        model_name += 'Auxiliary'
 
     print('Training {}:'.format(model_name))
 
@@ -45,27 +49,56 @@ def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, l
 
         criterion = torch.nn.CrossEntropyLoss()
 
-        model = model_maker()
-        model = model.to(device)
+        model = model_maker().to(device)
+
         criterion = criterion.to(device)
 
         optimizer = torch.optim.Adam(model.parameters(),lr)
         # optimizer = torch.optim.SGD(model.parameters(), lr= 10e-2)
 
+
         # optimizer.to(device)
         input_train, target_train = input_train.to(device), target_train.to(device)
         input_test, target_test = input_test.to(device), target_test.to(device)
+        if auxiliary:
+            classes_train, classes_test = classes_train.to(device), classes_test.to(device)
+
 
         # input_train, target_train = input_train[:,0,:,:].to(device), classes_train[:,0].to(device)
         # input_test, target_test = input_test[:,0,:,:].to(device), classes_test[:,0].to(device)
 
         for e in range(nb_epochs):
             for input, targets in zip(input_train.split(batch_size), target_train.split(batch_size)):
-                optimizer.zero_grad()
-                output = model(input)
-                loss = criterion(output, targets)
-                loss.backward()
-                optimizer.step()
+                if type(model).__name__ != 'SiameseNet' or not auxiliary:
+                    optimizer.zero_grad()
+                    output = model(input)
+                    loss = criterion(output, targets)
+                    loss.backward()
+                    optimizer.step()
+                else:
+                    #first pass
+                    #separating the data so that we train on the two images separatly, and learn to classify them properly
+                    input_train1,classes_train1,input_train2,classes_train2 = split_channels(input_train, classes_train)
+
+                    #use the branch to perform handwritten digits classification
+                    out1 = model.branch(input_train1)
+                    out2 = model.branch(input_train2)
+
+                    #auxiliary loss: learn to detect the handwritten digits directly
+                    loss_aux = criterion(out1,classes_train1) + criterion(out2,classes_train2)
+
+                    #optimize based on this
+                    model.zero_grad()
+                    loss_aux.backward(retain_graph=True)
+                    optimizer.step()
+
+                    #second pass
+                    #loss and optimization of the whole model
+                    response = model.forward(input_train)
+                    loss = criterion(response,target_train)
+                    model.zero_grad()
+                    loss.backward()
+                    optimizer.step()
 
             with torch.no_grad():
                 print('{:3}%| Trial {:>2}/{} - Iteration #{:>3}/{}:\t'.format(int((trial*nb_epochs + e+1)/n_trials/nb_epochs*100), trial+1, n_trials, e+1, nb_epochs),

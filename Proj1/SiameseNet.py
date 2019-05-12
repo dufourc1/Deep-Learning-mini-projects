@@ -73,7 +73,7 @@ class SiameseNet(nn.Module):
         x = self.pooling(x)
         return x
 
-    def train(self,train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50, batch_size=250, device='cpu', evolution = False, test_input = None, test_target = None):
+    def train(self, train_input, train_target, train_classes = None, auxiliary = False, verbose = True, nb_epochs = 50, batch_size=250, device='cpu', evolution = False, test_input = None, test_target = None):
         """ Training of the siamese module.
             if not auxiliary:
                 usual training

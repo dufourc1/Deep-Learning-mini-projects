@@ -88,4 +88,4 @@ if __name__ == '__main__':
     test(input_train, target_train, classes_train,\
         input_test, target_test, classes_test, SimpleNet, "SimpleNet branch", epochs = epochs, verbose = False, device=device)
     test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1], device=device)
+        input_test, target_test, classes_test, ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1, 10], device=device)
