@@ -1,0 +1,4 @@
+ModelName;meanCELoss_tr;stdCELoss_tr;meanCELoss_te;stdCELoss_te;meanAccuracy_tr;stdAccuracy_tr;meanAccuracy_te;stdAccuracy_tr
+FullyConnected;0.3828;0.08021;0.7277;0.4384;0.8326;0.04884;0.7491;0.03092
+BasicConvolutional;0.6931;0.0;0.6931;0.0;0.4478;0.01689;0.4522;0.01666
+BasicFullyConvolutional;0.1542;0.01142;0.4893;0.02262;0.9864;0.005602;0.7989;0.01241

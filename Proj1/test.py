@@ -6,7 +6,23 @@ def nn_accuracy_score(model, X, y):
     with torch.no_grad():
         return (model(X).argmax(dim=1) == y).sum().item() / len(y)
 
-def test(model, mean=True, n_trials = 5, device=None):
+def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name='Network', output= None):
+    if output is None:
+        print('\n\
+    Cross Entropy Loss on TRAIN :\t{:.4}'.format(torch.tensor(CELoss_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_tr).std().item()), '\n\
+    Cross Entropy Loss on TEST :\t{:.4}'.format(torch.tensor(CELoss_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_te).std().item()), '\n\
+    Accuracy score on TRAIN :\t{:.4}'.format(torch.tensor(Accuracy_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_tr).std().item()), '\n\
+    Accuracy score on TEST :\t{:.4}'.format(torch.tensor(Accuracy_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_te).std().item()))
+        return
+
+    with open(output, 'a') as f:
+        f.write('{};{:.4};{:.4};{:.4};{:.4};{:.4};{:.4};{:.4};{:.4}\n'.format(model_name, torch.tensor(CELoss_tr).mean().item(), torch.tensor(CELoss_tr).std().item(),
+         torch.tensor(CELoss_te).mean().item(), torch.tensor(CELoss_te).std().item(),
+         torch.tensor(Accuracy_tr).mean().item(), torch.tensor(Accuracy_tr).std().item(),
+         torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item()))
+    print('\n')
+
+def test(model, mean=True, n_trials = 5, device=None, output_file= None):
 
     if device is None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -18,6 +34,10 @@ def test(model, mean=True, n_trials = 5, device=None):
     CELoss_te = []
     Accuracy_tr = []
     Accuracy_te = []
+
+    model_name = type(model).__name__
+
+    print('Training {}:'.format(model_name))
 
     for trial in range(n_trials):
         input_train, target_train, classes_train, input_test, target_test, classes_test = generate_pair_sets(1000)
@@ -48,7 +68,7 @@ def test(model, mean=True, n_trials = 5, device=None):
                 optimizer.step()
 
             with torch.no_grad():
-                print('Trial {:>2}/{} - Iteration #{:>3}/{}:\t'.format(trial+1, n_trials, e+1, nb_epochs),
+                print('{:3}%| Trial {:>2}/{} - Iteration #{:>3}/{}:\t'.format(int((trial*nb_epochs + e+1)/n_trials/nb_epochs*100), trial+1, n_trials, e+1, nb_epochs),
                 'Cross Entropy Loss on TRAIN :\t{:11.5}'.format(criterion(model(input_train),target_train).item()), end='\r')
 
         with torch.no_grad():
@@ -68,9 +88,5 @@ def test(model, mean=True, n_trials = 5, device=None):
             Accuracy_te.append(this_Accuracy_te)
 
     with torch.no_grad():
-        print('\n\
-    Cross Entropy Loss on TRAIN :\t', torch.tensor(CELoss_tr).mean().item(), u"\u00B1", torch.tensor(CELoss_tr).std().item(), ' \n\
-    Cross Entropy Loss on TEST :\t', torch.tensor(CELoss_te).mean().item(), u"\u00B1", torch.tensor(CELoss_te).std().item(),'\n\
-    Accuracy score on TRAIN :\t', torch.tensor(Accuracy_tr).mean().item(), u"\u00B1", torch.tensor(Accuracy_tr).std().item(),'\n\
-    Accuracy score on TEST :\t', torch.tensor(Accuracy_te).mean().item(), u"\u00B1", torch.tensor(Accuracy_te).std().item())
-    return model
+        score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name = model_name, output = output_file)
+    return
