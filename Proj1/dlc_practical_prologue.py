@@ -35,7 +35,7 @@ parser.add_argument('--cifar',
 
 parser.add_argument('--data_dir',
                     type = str, default = None,
-                    help = 'Where are the PyTorch data located (default $PYTORCH_DATA_DIR or \'./data\')')
+                    help = 'Where are the PyTorch data located (default $PYTORCH_DATA_DIR or \'.data\')')
 
 
 # Timur's fix
