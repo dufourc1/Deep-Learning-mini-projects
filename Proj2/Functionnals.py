@@ -1,11 +1,26 @@
+'''
+Implementation of the activation functions
+'''
+
 import torch
 
 from Module import Module
 
-# TODO: check if torch.relu can be used
-# TODO: check derivative of relu
+
 
 class Relu(Module):
+    """ Implementation of the activation function Relu:
+            relu(x) = max(0,x)
+
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+    input : type
+        parameter reminding the last input in order to compute the gradient if needed
+
+    """
 
     def __init__(self):
         super(Relu,self).__init__()
@@ -14,7 +29,6 @@ class Relu(Module):
 
     def forward(self,x):
         #apply Relu
-        #return torch.max(x, torch.zeros_like(x))
         self.input = x
         return torch.relu(x)
 
@@ -34,6 +48,19 @@ class Relu(Module):
         return "Relu"
 
 class Tanh(Module):
+    """ Implementation of the activation function Tanh:
+            tanh(x) = 2/(1+exp(-2x)) -1
+
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+    input : type
+        parameter reminding the last input in order to compute the gradient if needed
+
+    """
+
 
     def __init__(self):
         super(Tanh,self).__init__()
@@ -45,6 +72,7 @@ class Tanh(Module):
 
     def backward(self,dx):
         #apply derivative of tanh
+        # return the pointwise product of its derivative and the derivative of the next layer
         ds =  4*(self.input.exp() + self.input.mul(-1).exp()).pow(-2)
         return ds*dx
 

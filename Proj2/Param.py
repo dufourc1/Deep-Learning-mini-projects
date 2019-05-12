@@ -3,6 +3,25 @@ from Module import Module
 
 
 class Parameters(Module):
+    """Short summary.
+
+    Parameters
+    ----------
+    value : tensor
+        value of the parameter
+
+    Examples
+    -------
+    >>> param = Parameters(torch.tensor([1.,2.]))
+
+    Attributes
+    ----------
+    grad : tensor
+        attribute to keep track of the gradient of the parameter
+    value: tensor
+        value of the parameter
+
+    """
 
     def __init__(self,value):
         super(Parameters,self).__init__()

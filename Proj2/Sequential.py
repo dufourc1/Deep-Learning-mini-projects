@@ -4,6 +4,23 @@ from Linear import Linear
 
 
 class Sequential(Module):
+    """ Allows easy implementation of simple neural network
+
+    Parameters
+    ----------
+    *args : list of Module
+        list of Modules that will compose the sequential network, see examples
+
+    Examples
+    -------
+    >>> model = Sequential(Linear(2,25),Relu(),Linear(25,25), Relu(),Linear(25,2))
+
+    Attributes
+    ----------
+    layers : Module
+        Etiher Linear layer of activation functions (as Functionnals)
+
+    """
 
     def __init__(self,*args):
         super(Sequential,self).__init__()
@@ -15,7 +32,6 @@ class Sequential(Module):
     def forward(self,x):
         for layer in self.layers:
             x = layer.forward(x)
-
         return x
 
     def backward(self, next_derivative):

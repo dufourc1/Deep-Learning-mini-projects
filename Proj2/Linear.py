@@ -1,9 +1,12 @@
+'''
+implementation of a simple linear layer
+'''
+
 import torch
+import math
+
 from Module import Module
 from Param import Parameters
-
-
-import sys
 
 class Linear(Module):
 
@@ -11,7 +14,9 @@ class Linear(Module):
     def __init__(self, input_size, output_size):
         super(Linear,self).__init__()
         type = torch.float32
-        self.weights = Parameters(torch.empty(output_size,input_size,dtype= type).normal_(0,1e-0))
+        #use Xavier initialization
+        std = math.sqrt(2./(input_size+output_size))
+        self.weights = Parameters(torch.empty(output_size,input_size,dtype= type).normal_(0,std))
         self.bias = Parameters(torch.zeros(output_size,dtype=type))
         self.result = Parameters(torch.empty(output_size,dtype=type))
         self.input = Parameters(torch.empty(input_size,dtype=type))
@@ -76,11 +81,6 @@ class Linear(Module):
         else:
             x_i = self.input.value
 
-        #debugging
-        # print("backward for {}".format(self))
-        # print("derivative received is {}".format(next_derivative.shape))
-        # print("input was of size {}".format(self.input.value.shape))
-
         # derivative with respect to the weights: dloss/dw
         self.weights.grad += torch.mm(derivative.t(),x_i)
 
@@ -91,28 +91,12 @@ class Linear(Module):
         #derivative if the loss with respect to the input of the layer:  dloss/dx_i pass it to the next layer
         next_derivative = torch.mm(derivative,self.weights.value)
 
-        # if (derivative != derivative).sum().item() > 0:
-        #     print("derivative passed to {}, issue nan detected".format(self))
-        #     print(self.input.value)
-        #     print(self.weights.value)
-        #     print(self.bias.value)
-        #     print(derivative)
-        #     sys.exit()
-        #
-        # if (next_derivative != next_derivative).sum().item() > 0:
-        #     print("derivative output of {}".format(self))
-        #     print(self.input.value)
-        #     print(self.weights.value)
-        #     print(self.bias.value)
-        #     print(next_derivative)
-        #     sys.exit()
-        # return dloss/dx_i so that it can be passed to the next layer
         return next_derivative
 
 
     def zero_grad(self):
         '''
-        Set all the parameters' gradient to 0
+        Set all the parameters' gradient to 0.
         '''
         self.weights.grad.zero_()
         self.bias.grad.zero_()
