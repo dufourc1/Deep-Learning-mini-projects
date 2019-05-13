@@ -60,7 +60,7 @@ def train(model, criterion, optimizer, input, target, nb_epochs = 200, verbose =
         for b in range(0, input.size(0), mini_batch_size):
             output = model.forward(input.narrow(0, b, mini_batch_size))
             loss = criterion.forward(output, target.narrow(0, b, mini_batch_size))
-            loss_e += loss
+            loss_e += loss.item()
             model.zero_grad()
             inter = criterion.backward()
             model.backward(inter)
@@ -73,7 +73,7 @@ def train(model, criterion, optimizer, input, target, nb_epochs = 200, verbose =
 
         if verbose:
             message = "epoch {:3}, loss {:10.4}".format(e,loss_e)
-            update_progress((e+1.)/nb_epochs, message= message)
+            update_progress(e/nb_epochs, message= message)
 
     return loss_evolution, precision_evolution
 

@@ -1,80 +1,59 @@
 import torch
 import math
 import sys
+import matplotlib.pyplot as plt
 
 #importing our module
 sys.path.append('dl/')
 from Sequential import Sequential
 from Linear import Linear
-from Functionnals import Relu,Tanh
+from Functionnals import Relu
 import Optimizer
 import Criterion
-from helpers import test
+from helpers import train, generate_disc_data, compute_accuracy
 
 #setting the type of tensor
 torch.set_default_dtype(torch.float32)
 
+#disable autograd
+torch.set_grad_enabled(False)
 
+#create model
+model = Sequential(Linear(2,25),Relu(),Linear(25,25),Relu(),Linear(25,25), Relu(),Linear(25,2))
 
-rep = 20
-epochs = 200
+#create data_sets with one hot encoding for MSE
+train_input, train_target = generate_disc_data(one_hot_labels = True)
+test_input, test_target = generate_disc_data(one_hot_labels = True)
 
-lr = 1e-1
-mu = 0.2
+#normalize the data
+mean,std = train_input.mean(), train_input.std()
+train_input.sub_(mean).div_(std)
+test_input.sub_(mean).div_(std)
 
-plots = False
-show_plots = False
-save_csv = False
+#define loss
+criterion = Criterion.MSE()
 
-#create models and optimizers
-def model_relu():
-    return  Sequential(Linear(2,25),Relu(),Linear(25,25),
-                        Relu(),Linear(25,25), Relu(),Linear(25,2))
-def model_tanh():
-    return Sequential(Linear(2,25),Tanh(),Linear(25,25),
-                        Tanh(), Linear(25,25), Tanh(),Linear(25,2))
+#define optimizer
+optim = Optimizer.SGD(parameters = model.param(), lr = 1e-1)
 
-def opti(model):
-    return Optimizer.SGD(model.param(),lr = lr)
-def opti_mom(model):
-    return Optimizer.SGD(model.param(), lr = lr, momentum = True, mu = mu)
+#train the model
+loss, accuracy = train(model,criterion,optim,train_input,train_target, nb_epochs = 200, verbose = True)
 
-CE = Criterion.CrossEntropy()
-MSE = Criterion.MSE()
+#compute statistics on test
+output = model.forward(test_input)
+loss_test = criterion.forward(output,test_target)
+accuracy_test = compute_accuracy(model.forward,test_input,test_target)
 
+print("")
+print("TRAIN:  accuracy {:.4}%, loss {:.4}".format(accuracy[-1],loss[-1]))
+print("TEST :  accuracy {:.4}%, loss {:.4}".format( accuracy_test/test_target.shape[0]*100, loss_test))
 
-##############################################################################
-#                    test Relu vs Tanh with crossentropy
-##############################################################################
-
-test(model_relu, model_tanh, opti, opti, CE, CE, "relu", "tanh",
-    repetitions = rep, message = "Relu vs Tanh with crossentropy",
-    plots = plots, show_plots = show_plots, title_plots = "CE",
-    save_result_csv = save_csv, filename = "../results/csv/CE.csv")
-
-###############################################################################
-#               test Relu vs Tanh with crossentropy and momentum
-###############################################################################
-
-test(model_relu, model_tanh, opti_mom, opti_mom, CE, CE, "relu with momentum", "tanh with momentum",
-    repetitions = rep, message = "Relu vs Tanh with crossentropy and momentum",
-    plots = plots, show_plots = show_plots, title_plots = "CE_MOM",
-    save_result_csv = save_csv, filename = "../results/csv/CE.csv")
-
-##############################################################################
-#                    test Relu vs Tanh with MSE
-##############################################################################
-
-test(model_relu, model_tanh, opti, opti, MSE, MSE, "relu", "tanh", one_hot = True,
-    repetitions = rep, message = "Relu vs Tanh with Mean Square error",
-    plots = plots, show_plots = show_plots, title_plots = "MSE",
-    save_result_csv = save_csv, filename = "../results/csv/MSE.csv")
-
-##############################################################################
-#                    test Relu vs Tanh with MSE with mom
-##############################################################################
-
-test(model_relu, model_tanh, opti_mom, opti_mom, MSE, MSE, "relu with momentum", "tanh with momentum",
-    one_hot =True, repetitions = rep, message = "Relu vs Tanh with Mean Square error and momentum",
-    plots = plots, show_plots = show_plots, title_plots = "MSE_MOM",
-    save_result_csv = save_csv, filename = "../results/csv/MSE.csv")
+#vizualisation
+plt.subplot(121)
+plt.plot(loss, label = "loss", c = "orange")
+plt.legend()
+plt.subplot(122)
+plt.plot(accuracy, label = "accuracy", c = "blue")
+plt.legend()
+plt.savefig("../results/plots/test.png", bbox_inches = "tight")
+plt.show()
