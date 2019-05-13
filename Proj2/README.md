@@ -76,9 +76,7 @@ The plots will be saved in `results/plots`
 
 ## Implementation details
 
-The structure of the classes in the module `dl` is represented below.
-
-![alt text](results/plots/structure.pdf)
+The structure of the classes in the module `dl` can be found in `report.pdf`.
 
 We tried to stay as close as possible to the `torch.nn` module. The main differences will be highlighted below.
 
