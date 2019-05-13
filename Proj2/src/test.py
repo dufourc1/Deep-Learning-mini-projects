@@ -15,14 +15,6 @@ from helpers import test
 torch.set_default_dtype(torch.float32)
 
 
-# all models have the following structure:
-# Sequential(
-#     Linear(in_features= 2, out_features= 25)
-#     Linear(in_features= 25, out_features= 25)
-#     Linear(in_features= 25, out_features= 25)
-#     Linear(in_features= 25, out_features= 2)
-# )
-
 
 rep = 20
 epochs = 200
@@ -30,6 +22,9 @@ epochs = 200
 lr = 1e-1
 mu = 0.2
 
+plots = False
+show_plots = False
+save_csv = False
 
 #create models and optimizers
 def model_relu():
@@ -53,29 +48,33 @@ MSE = Criterion.MSE()
 ##############################################################################
 
 test(model_relu, model_tanh, opti, opti, CE, CE, "relu", "tanh",
-    repetitions = rep, message = "Relu vs Tanh with crossentropy", \
-    save_result_csv = True, filename = "results/CE.csv")
+    repetitions = rep, message = "Relu vs Tanh with crossentropy",
+    plots = plots, show_plots = show_plots, title_plots = "CE",
+    save_result_csv = save_csv, filename = "../results/csv/CE.csv")
 
 ###############################################################################
 #               test Relu vs Tanh with crossentropy and momentum
 ###############################################################################
 
 test(model_relu, model_tanh, opti_mom, opti_mom, CE, CE, "relu with momentum", "tanh with momentum",
-    repetitions = rep, message = "Relu vs Tanh with crossentropy and momentum",\
-    save_result_csv = True, filename = "results/CE.csv")
+    repetitions = rep, message = "Relu vs Tanh with crossentropy and momentum",
+    plots = plots, show_plots = show_plots, title_plots = "CE_MOM",
+    save_result_csv = save_csv, filename = "../results/csv/CE.csv")
 
 ##############################################################################
 #                    test Relu vs Tanh with MSE
 ##############################################################################
 
 test(model_relu, model_tanh, opti, opti, MSE, MSE, "relu", "tanh", one_hot = True,
-    repetitions = rep, message = "Relu vs Tanh with Mean Square error",\
-    save_result_csv = True, filename = "results/MSE.csv")
+    repetitions = rep, message = "Relu vs Tanh with Mean Square error",
+    plots = plots, show_plots = show_plots, title_plots = "MSE",
+    save_result_csv = save_csv, filename = "../results/csv/MSE.csv")
 
 ##############################################################################
 #                    test Relu vs Tanh with MSE with mom
 ##############################################################################
 
 test(model_relu, model_tanh, opti_mom, opti_mom, MSE, MSE, "relu with momentum", "tanh with momentum",
-    one_hot =True, repetitions = rep, message = "Relu vs Tanh with Mean Square error and momentum",\
-    save_result_csv = True, filename = "results/MSE.csv")
+    one_hot =True, repetitions = rep, message = "Relu vs Tanh with Mean Square error and momentum",
+    plots = plots, show_plots = show_plots, title_plots = "MSE_MOM",
+    save_result_csv = save_csv, filename = "../results/csv/MSE.csv")

@@ -23,6 +23,7 @@ torch.set_default_dtype(torch.float32)
 #def a fnunction to train pytorch models
 def train_ref(model, criterion, optimizer, input, target, nb_epochs = 200, verbose = False):
 
+
     mini_batch_size = 100
 
     #empty recipient
@@ -59,6 +60,12 @@ lr = 1e-1
 mu = 0.2
 
 
+#saving and plotting bool
+plots = False
+show_plots = False
+save_csv = False
+
+
 #create models
 def model_relu():
     return  Sequential(Linear(2,25),Relu(),Linear(25,25),
@@ -91,24 +98,27 @@ MSE_nn = nn.MSELoss()
 
 
 
-
 #actual comparison
 helpers.test(model_relu, model_relu_nn, opti, opti_nn, CE, CE_nn, "relu CE", "relu nn CE",
             repetitions = rep, message = "Relu vs Relu nn with crossentropy",
-            plots = True, show_plots = True,
-            training2 = train_ref, title_plots = "comparison_CE_")
+            plots = plots, show_plots = show_plots, chrono = True,
+            training2 = train_ref, title_plots = "comparison_CE_",
+            save_result_csv = save_csv, filename = "../results/csv/CE_comparison.csv")
 
 helpers.test(model_relu, model_relu_nn, opti_mom, opti_mom_nn, CE, CE_nn, "relu CE with momentum", "relu nn CE with momentum",
             repetitions = rep, message = "Relu vs Relu ref with crossentropy and momentum",
-            plots = True, show_plots = True,
-            training2 = train_ref, title_plots = "comparison_CE_MOM_")
+            plots = plots, show_plots = show_plots, chrono = True,
+            training2 = train_ref, title_plots = "comparison_CE_MOM_",
+            save_result_csv = save_csv, filename = "../results/csv/CE_comparison.csv")
 
 helpers.test(model_relu, model_relu_nn, opti, opti_nn, MSE, MSE_nn, "relu MSE", "relu nn MSE",
             repetitions = rep, message = "Relu vs Relu nn with MSE",
-            plots = True, show_plots = True,one_hot =True,
-            training2 = train_ref, title_plots = "comparison_MSE_")
+            plots = plots, show_plots = show_plots, one_hot =True, chrono = True,
+            training2 = train_ref, title_plots = "comparison_MSE_",
+            save_result_csv = save_csv, filename = "../results/csv/MSE_comparison.csv")
 
 helpers.test(model_relu, model_relu_nn, opti_mom, opti_mom_nn, MSE, MSE_nn, "relu MSE with momentum", "relu nn MSE with momentum",
             repetitions = rep, message = "Relu vs Relu nn with MSE with momentum",
-            plots = True, show_plots = True, one_hot =True,
-            training2 = train_ref, title_plots = "comparison_MSE_MOM_")
+            plots = plots, show_plots = show_plots, one_hot =True, chrono = True,
+            training2 = train_ref, title_plots = "comparison_MSE_MOM_",
+            save_result_csv = save_csv, filename = "../results/csv/MSE_comparison.csv")

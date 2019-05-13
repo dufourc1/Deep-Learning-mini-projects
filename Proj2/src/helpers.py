@@ -5,6 +5,7 @@ Various small helpers function for printing, plotting,...
 import torch
 import math
 import sys
+import time
 
 import matplotlib.pyplot as plt
 
@@ -22,22 +23,20 @@ def generate_disc_data(n = 1000, one_hot_labels = False, long = True):
     #generate points uniformly with label 0 if it falls outside the disk of radius 1/ 2π and 1 inside
     input = torch.empty(n,2).uniform_(0,1)
     centered = input- torch.empty(n,2).fill_(0.5)
-    if long:
-        target = centered.pow(2).sum(1).sub_(1/(2*math.pi)).sign().add(1).div(2).long()
-    else:
-        target = centered.pow(2).sum(1).sub_(1/(2*math.pi)).sign().add(1).div(2)
+    target = centered.pow(2).sum(1).sub_(1/(2*math.pi)).sign().add(1).div(2).long()
+    target = (-1.*(target-1.)).long()
     if one_hot_labels:
         target = convert_to_one_hot_labels(input,target)
     return input,target
 
 def create_results_csv():
-    with open("results/csv/CE.csv", 'w') as f:
+    with open("../results/csv/CE.csv", 'w') as f:
         f.write(','.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
                 'meanCELoss_te', 'stdCELoss_te',
                 'meanAccuracy_tr', 'stdAccuracy_tr',
                 'meanAccuracy_te', 'stdAccuracy_tr')) + '\n')
 
-    with open("results/csv/MSE.csv", 'w') as f:
+    with open("../results/csv/MSE.csv", 'w') as f:
         f.write(','.join(('ModelName', 'meanMSELoss_tr', 'stdMSELoss_tr',
                 'meanMSELoss_te', 'stdMSELoss_te',
                 'meanAccuracy_tr', 'stdAccuracy_tr',
@@ -48,7 +47,7 @@ def create_results_csv():
 ################################################################################
 
 def train(model, criterion, optimizer, input, target, nb_epochs = 200, verbose = False):
-
+    #train a model form our framework
     mini_batch_size = 100
 
     #empty recipient
@@ -104,7 +103,7 @@ def compute_accuracy(model, data_input, data_target):
 ################################################################################
 
 def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, repetitions = 10,
-        epochs = 200, message = "", plots = False, save_result_csv = False, one_hot = False,
+        epochs = 200, message = "", plots = False, save_result_csv = False, one_hot = False,chrono = False,
         filename = None, show_plots = False, training1 = train, training2 = train, title_plots = ""):
 
     """
@@ -116,6 +115,7 @@ def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, rep
     ----------
     Model1 : function
         when call return a Sequential model
+
     Model2 : function
         when call return a Sequential model
     Optimizer1 : function
@@ -143,6 +143,8 @@ def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, rep
         if True save statistics of results to a csv file (the default is False).
     one_hot : bool
         encoding of the data generated (the default is False).
+    chrono: bool
+        print the mean time to train (the default is False).
     filename : string
         name of the csv file to save the results (the default is None).
     show_plots : bool
@@ -150,6 +152,8 @@ def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, rep
     training: function
         function to train the models, if different ones are needed (for ex when comparing nn
         and this framework)
+    title_plots: string
+        to save and retrieve the plots
 
 
     Examples
@@ -181,6 +185,9 @@ def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, rep
     print("--------------------------------Comparison for {} runs of ".format(repetitions) + message)
     update_progress((0.)/repetitions)
 
+    if chrono:
+        times1 = []
+        times2 = []
     for k in range(repetitions):
 
         #create a dataset
@@ -202,11 +209,15 @@ def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, rep
 
 
         #training and recording of data
+        if chrono:  start = time.time()
         loss_model_1, accuracy_model1 = training1(model1, loss1, optimizer1,
                             train_input, train_target, nb_epochs = epochs)
+        if chrono: times1.append(time.time()-start)
 
+        if chrono: start = time.time()
         loss_model_2, accuracy_model2 = training2(model2, loss2, optimizer2,
                             train_input, train_target, nb_epochs = epochs)
+        if chrono: times2.append(time.time()-start)
 
         #save the data at each epochs
         losses_model1.append(loss_model_1)
@@ -230,6 +241,10 @@ def test(Model1, Model2, Optimizer1, Optimizer2, loss1, loss2, name1, name2, rep
     #terminal printing of results
     print_(loss_test_model1, accuracy_tr1, name1)
     print_(loss_test_model2, accuracy_tr2, name2)
+
+    if chrono:
+        print(name1," mean time to train on {} epochs: {:4.4}s".format(epochs, torch.tensor(times1).mean()))
+        print(name2," mean time to train on {} epochs: {:4.4}s".format(epochs, torch.tensor(times2).mean()))
 
     losses_model1_t = torch.tensor(losses_model1)
     losses_model2_t = torch.tensor(losses_model2)
@@ -296,7 +311,7 @@ def plot_loss(losses,names, colors, title = "", show = True,save = False, smalle
     plt.legend()
     plt.title(title)
     if save:
-        plt.savefig("results/plots/"+title, bbox_inches = "tight")
+        plt.savefig("../results/plots/"+title, bbox_inches = "tight")
     if show:
         plt.show()
 
