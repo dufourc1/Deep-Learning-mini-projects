@@ -62,7 +62,7 @@ Import function from `helpers.py`, `dl` and `torch.nn`
 
 This script compares the creation and training of models with our module and with the `torch.nn` module for the same losses,
 optimizers and activation functions as above. For example below is the comparison on 20 experiments of the accuracy with CrossEntropy loss.
-This will produce these plots where the mean precision over the experiments is in bold and the experiments are merely transparent.
+This will produce these plots where the mean precision over the experiments is in bold and each experiments traces a  merely transparent line.
 
 The plots will be saved in `results/plots`
 
@@ -89,7 +89,7 @@ Class created in order to store parameter and their gradient in the same structu
 ### Linear
 Child of `Module`
 
-Implementation of a simple linear layer. In order to perform backpropagation it should be given as input the derivative with respect to its output.
+Implementation of a simple linear layer with Xavier's initialization. In order to perform backpropagation it should be given as input the derivative with respect to its output.
 ### Optimizer
 Child of `Module`
 
