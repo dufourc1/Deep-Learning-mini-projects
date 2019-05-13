@@ -1,0 +1,5 @@
+ModelName,meanCELoss_tr,stdCELoss_tr,meanCELoss_te,stdCELoss_te,meanAccuracy_tr,stdAccuracy_tr,meanAccuracy_te,stdAccuracy_tr
+relu,0.3265,0.08971,0.05266,0.02587,98.67,1.054,97.74,1.025
+tanh,0.4625,0.08314,0.05089,0.01056,98.38,0.7945,97.73,0.7651
+relu with momentum,0.3482,0.08222,0.0615,0.03233,98.29,1.044,97.45,1.061
+tanh with momentum,0.453,0.09328,0.05406,0.02226,98.04,0.8482,97.61,1.067
