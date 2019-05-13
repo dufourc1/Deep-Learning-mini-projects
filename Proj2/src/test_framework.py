@@ -3,6 +3,7 @@ import math
 import sys
 
 #importing our framework
+sys.path.append('dl/')
 from Sequential import Sequential
 from Linear import Linear
 from Functionnals import Relu,Tanh
@@ -87,6 +88,8 @@ CE = Criterion.CrossEntropy()
 MSE = Criterion.MSE()
 CE_nn = nn.CrossEntropyLoss()
 MSE_nn = nn.MSELoss()
+
+
 
 
 #actual comparison

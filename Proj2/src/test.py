@@ -2,6 +2,8 @@ import torch
 import math
 import sys
 
+#importing our module
+sys.path.append('dl/')
 from Sequential import Sequential
 from Linear import Linear
 from Functionnals import Relu,Tanh
@@ -44,7 +46,6 @@ def opti_mom(model):
 
 CE = Criterion.CrossEntropy()
 MSE = Criterion.MSE()
-
 
 
 ##############################################################################

@@ -31,13 +31,13 @@ def generate_disc_data(n = 1000, one_hot_labels = False, long = True):
     return input,target
 
 def create_results_csv():
-    with open("results/CE.csv", 'w') as f:
+    with open("results/csv/CE.csv", 'w') as f:
         f.write(','.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
                 'meanCELoss_te', 'stdCELoss_te',
                 'meanAccuracy_tr', 'stdAccuracy_tr',
                 'meanAccuracy_te', 'stdAccuracy_tr')) + '\n')
 
-    with open("results/MSE.csv", 'w') as f:
+    with open("results/csv/MSE.csv", 'w') as f:
         f.write(','.join(('ModelName', 'meanMSELoss_tr', 'stdMSELoss_tr',
                 'meanMSELoss_te', 'stdMSELoss_te',
                 'meanAccuracy_tr', 'stdAccuracy_tr',
@@ -296,7 +296,7 @@ def plot_loss(losses,names, colors, title = "", show = True,save = False, smalle
     plt.legend()
     plt.title(title)
     if save:
-        plt.savefig("results/"+title, bbox_inches = "tight")
+        plt.savefig("results/plots/"+title, bbox_inches = "tight")
     if show:
         plt.show()
 
