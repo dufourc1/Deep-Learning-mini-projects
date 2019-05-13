@@ -36,8 +36,6 @@ The folder structure has to be the following:
 ## Test files
 
 
-### test.py
-
 Import functions from `helpers.py`, and `dl`
 
 We train a model with the structure
@@ -50,6 +48,16 @@ on the following simulated data as instructed
     each  with  a label 0 if outside the disk of radius 1/√2π and 1 inside
 
 <img src="https://github.com/dufourc1/Deep-Learning-mini-projects/blob/module_proj2/Proj2/results/plots/data.png" width="200">
+
+results:
+
+![alt text](results/plots/test.png)
+
+### test_acti_losses.py
+
+Import functions from `helpers.py`, and `dl`
+
+As before, but we compare our different possible architectures
 
 We compare the performance with `MSE` and `CrossEntropy` losses, `Relu` or `Tanh` acitvation functions,
 and we train the models with the vanilla stochastic gradient descent and stochastic gradient with momentum
@@ -69,8 +77,8 @@ This will produce these plots where the mean precision over the experiments is i
 The plots will be saved in `results/plots`
 
 
-![alt text](results/plots/comp_framework/comparison_MSE_MOM_accuracy.png)
 
+![alt text](results/plots/comp_framework/comparison_MSE_MOM_accuracy.png)
 
 
 
