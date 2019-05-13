@@ -49,6 +49,8 @@ on the following simulated data as instructed
 > training  and  test  set  of  1,000  points each  sampled  uniformly  in  [0,1]x[0,1],
     each  with  a label 0 if outside the disk of radius 1/√2π and 1 inside
 
+<img src="https://github.com/dufourc1/Deep-Learning-mini-projects/blob/module_proj2/Proj2/results/plots/data.png" width="200">
+
 We compare the performance with `MSE` and `CrossEntropy` losses, `Relu` or `Tanh` acitvation functions,
 and we train the models with the vanilla stochastic gradient descent and stochastic gradient with momentum
 
@@ -67,7 +69,7 @@ This will produce these plots where the mean precision over the experiments is i
 The plots will be saved in `results/plots`
 
 
-![alt text](results/plots/comparison_CE_accuracy.png)
+![alt text](results/plots/comp_framework/comparison_MSE_MOM_accuracy.png)
 
 
 
@@ -76,7 +78,7 @@ The plots will be saved in `results/plots`
 
 The structure of the classes in the module `dl` is represented below.
 
-![alt text](structure.png)
+![alt text](results/plots/structure.pdf)
 
 We tried to stay as close as possible to the `torch.nn` module. The main differences will be highlighted below.
 
