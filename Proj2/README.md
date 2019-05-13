@@ -52,6 +52,7 @@ on the following simulated data as instructed
 We compare the performance with `MSE` and `CrossEntropy` losses, `Relu` or `Tanh` acitvation functions, 
 and we train the models with the vanilla stochastic gradient descent and stochastic gradient with momentum
 
+The results will be saved as `csv` (vizualization of the final state) in `results/csv` and as plots in `results/plots` (vizualization of the training).
 
 
 
@@ -60,13 +61,30 @@ and we train the models with the vanilla stochastic gradient descent and stochas
 Import function from `helpers.py`, `dl` and `torch.nn`
 
 This script compares the creation and training of models with our module and with the `torch.nn` module for the same losses, 
-optimizers and activation functions as above.
+optimizers and activation functions as above. For example below is the comparison on 20 experiments of the accuracy with CrossEntropy loss.
+This will produce these plots where the mean precision over the experiments is in bold and the experiments are merely transparent.
+
+The plots will be saved in `results/plots`
+
+
+![alt text](results/plots/comparison_CE_accuracy.png)
+
+
 
 
 ## Implementation details
 
+The structure of the classes in the module `dl` is represented below.
 
+![alt text](structure.png)
 
+### Module
+### Param
+### Linear
+### Optimizer
+### Criterion
+### Functionals
+### Sequential
 
 ## Authors
 
