@@ -1,3 +1,4 @@
+import time
 import torch
 from torch.nn.functional import relu
 
@@ -8,20 +9,22 @@ def nn_accuracy_score(model, X, y):
     with torch.no_grad():
         return (model(X).argmax(dim=1) == y).sum().item() / len(y)
 
-def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name='Network', output= None):
+def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, time_tr, model_name='Network', output= None):
     if output is None:
         print('\n\
     Cross Entropy Loss on TRAIN :\t{:.4}'.format(torch.tensor(CELoss_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_tr).std().item()), '\n\
     Cross Entropy Loss on TEST :\t{:.4}'.format(torch.tensor(CELoss_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_te).std().item()), '\n\
-    Accuracy score on TRAIN :\t{:.4}'.format(torch.tensor(Accuracy_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_tr).std().item()), '\n\
-    Accuracy score on TEST :\t{:.4}'.format(torch.tensor(Accuracy_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_te).std().item()))
+    Accuracy score on TRAIN :\t\t{:.4}'.format(torch.tensor(Accuracy_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_tr).std().item()), '\n\
+    Accuracy score on TEST :\t\t{:.4}'.format(torch.tensor(Accuracy_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_te).std().item()), '\n\
+    Training time :\t\t\t{:.4}'.format(torch.tensor(time_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(time_tr).std().item()))
         return
 
     with open(output, 'a') as f:
-        f.write('{},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4}\n'.format(model_name, torch.tensor(CELoss_tr).mean().item(), torch.tensor(CELoss_tr).std().item(),
+        f.write('{},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4}\n'.format(model_name, torch.tensor(CELoss_tr).mean().item(), torch.tensor(CELoss_tr).std().item(),
          torch.tensor(CELoss_te).mean().item(), torch.tensor(CELoss_te).std().item(),
          torch.tensor(Accuracy_tr).mean().item(), torch.tensor(Accuracy_tr).std().item(),
-         torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item()))
+         torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item(),
+         torch.tensor(time_tr).mean().item(), torch.tensor(time_tr).std().item()))
     print('\n')
 
 def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=75, batch_size =250, infos='', auxiliary= False):
@@ -36,6 +39,7 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
     CELoss_te = []
     Accuracy_tr = []
     Accuracy_te = []
+    time_tr = []
 
     model = model_maker(activation_fc)
     model_name = type(model).__name__ + infos
@@ -67,6 +71,7 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
 
         # input_train, target_train = input_train[:,0,:,:].to(device), classes_train[:,0].to(device)
         # input_test, target_test = input_test[:,0,:,:].to(device), classes_test[:,0].to(device)
+        start_time = time.time()
 
         for e in range(nb_epochs):
             for input, targets in zip(input_train.split(batch_size), target_train.split(batch_size)):
@@ -106,6 +111,7 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
                 'Cross Entropy Loss on TRAIN :\t{:11.5}'.format(criterion(model(input_train),target_train).item()), end='\r')
 
         with torch.no_grad():
+            elapsed_time = time.time() - start_time
             this_CELoss_tr = criterion(model(input_train),target_train).item()
             this_CELoss_te = criterion(model(input_test),target_test).item()
             this_Accuracy_tr = nn_accuracy_score(model, input_train, target_train)
@@ -120,7 +126,8 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
             CELoss_te.append(this_CELoss_te)
             Accuracy_tr.append(this_Accuracy_tr)
             Accuracy_te.append(this_Accuracy_te)
+            time_tr.append(elapsed_time)
 
     with torch.no_grad():
-        score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name = model_name, output = output_file)
+        score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, time_tr, model_name = model_name, output = output_file)
     return

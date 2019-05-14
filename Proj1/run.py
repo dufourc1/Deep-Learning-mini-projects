@@ -124,8 +124,8 @@ model_makers = {'all': None,
 model_lrs = {'all': None,
             # 'NoModel': no_model,
             'fcnn': 1e-3,
-            'basicconv': 2e-4, #2e-4
-            'basicconvbn': 2e-4,
+            'basicconv': 4e-4, #2e-4
+            'basicconvbn': 4e-4,
             'basicfullyconv': 7e-4,
             'basicfullyconvbn': 7e-4,
             'dropoutfc': 2e-4,
@@ -153,7 +153,8 @@ def run_all(output = None):
             f.write(','.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
              'meanCELoss_te', 'stdCELoss_te',
              'meanAccuracy_tr', 'stdAccuracy_tr',
-             'meanAccuracy_te', 'stdAccuracy_tr')) + '\n')
+             'meanAccuracy_te', 'stdAccuracy_tr',
+             'meanTime_tr', 'stdTime_tr')) + '\n')
 
     del model_makers['all']
     del model_makers['NoModel']
@@ -189,7 +190,7 @@ if model_makers.get(args.model) is None:
     print("Invalid model")
     exit(1)
 
-n_trials = 10
+n_trials = 2
 model_maker = model_makers.get(args.model)
 infos = model_infos.get(args.model, '')
 activation_fc = activation_fcs.get(args.activation_fc)
