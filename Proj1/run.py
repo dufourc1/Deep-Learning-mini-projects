@@ -225,7 +225,7 @@ def run_all(output = None):
             f.write(','.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
              'meanCELoss_te', 'stdCELoss_te',
              'meanAccuracy_tr', 'stdAccuracy_tr',
-             'meanAccuracy_te', 'stdAccuracy_tr',
+             'meanAccuracy_te', 'stdAccuracy_te',
              'meanTime_tr', 'stdTime_tr')) + '\n')
 
     del model_makers['all'] #I delete from the dictionary the keywords that do not give "proper models"
