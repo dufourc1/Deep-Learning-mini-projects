@@ -230,6 +230,11 @@ def run_all(output = None):
 
     del model_makers['all'] #I delete from the dictionary the keywords that do not give "proper models"
 
+    if not torch.cuda.is_available(): #the following models are very long to train so do not attempt to train them without gpu
+        del model_makers['resnet']
+        del model_makers['siamese']
+        del model_makers['siameseresnet']
+
     activation_fc = activation_fcs['relu']
 
     for model, model_maker in model_makers.items():
@@ -240,15 +245,24 @@ def run_all(output = None):
         if model.find('siamese') >= 0:
             test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos, auxiliary= True)
 
-    del model_makers['resnet']  #I do not test heavy models with activation fcts differetn from relu
-    del model_makers['siamese']
-    del model_makers['siameseresnet']
+    if torch.cuda.is_available():
+        del model_makers['resnet']  #I do not test heavy models with activation fcts differetn from relu
+        del model_makers['siamese']
+        del model_makers['siameseresnet']
 
     activation_fc = activation_fcs['tanh']
 
     for model, model_maker in model_makers.items():
+        n_trials = 15
         infos = model_infos.get(model, '')
         test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos + 'tanh')
+
+    activation_fc = activation_fcs['leakyrelu']
+
+    for model, model_maker in model_makers.items():
+        n_trials = 15
+        infos = model_infos.get(model, '')
+        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos + 'LeakyRelu')
 
     exit()
 
