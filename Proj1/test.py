@@ -41,7 +41,7 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
     Accuracy_te = []
     time_tr = []
 
-    model = model_maker(activation_fc)
+    model = model_maker(activation_fc= activation_fc)
     model_name = type(model).__name__ + infos
 
     if type(model).__name__ == 'SiameseNet' and auxiliary:
