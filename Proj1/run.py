@@ -190,7 +190,7 @@ if model_makers.get(args.model) is None:
     print("Invalid model")
     exit(1)
 
-n_trials = 2
+n_trials = 7
 model_maker = model_makers.get(args.model)
 infos = model_infos.get(args.model, '')
 activation_fc = activation_fcs.get(args.activation_fc)

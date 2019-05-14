@@ -16,7 +16,7 @@ def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, time_tr, mode
     Cross Entropy Loss on TEST :\t{:.4}'.format(torch.tensor(CELoss_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_te).std().item()), '\n\
     Accuracy score on TRAIN :\t\t{:.4}'.format(torch.tensor(Accuracy_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_tr).std().item()), '\n\
     Accuracy score on TEST :\t\t{:.4}'.format(torch.tensor(Accuracy_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_te).std().item()), '\n\
-    Training time :\t\t\t{:.4}'.format(torch.tensor(time_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(time_tr).std().item()))
+    Training time (s):\t\t\t{:.4}'.format(torch.tensor(time_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(time_tr).std().item()))
         return
 
     with open(output, 'a') as f:
