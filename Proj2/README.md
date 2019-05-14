@@ -47,11 +47,22 @@ on the following simulated data as instructed
 > training  and  test  set  of  1,000  points each  sampled  uniformly  in  [0,1]x[0,1],
     each  with  a label 0 if outside the disk of radius 1/√2π and 1 inside
 
+
+
+<p align="center">
+
+
 <img src="https://github.com/dufourc1/Deep-Learning-mini-projects/blob/module_proj2/Proj2/results/plots/data.png" width="200">
+
+</p>
 
 results:
 
+<p align="center">
+
 ![alt text](results/plots/test.png)
+</p>
+
 
 ### test_acti_losses.py
 
@@ -77,8 +88,10 @@ This will produce these plots where the mean precision over the experiments is i
 The plots will be saved in `results/plots`
 
 
+<p align="center">
 
 ![alt text](results/plots/comp_framework/comparison_MSE_MOM_accuracy.png)
+</p>
 
 
 
