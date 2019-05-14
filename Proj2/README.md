@@ -117,7 +117,8 @@ Define the optimizer `SGD` (stochastic gradient descent) with the momentum optio
 ### Functionals
 Child of `Module`
 
-Define the activation functions `Relu` and `Tanh`. The `forward` and  `backward` functions are used to compute the evaluation and derivative of the activation function. The activation functions "remember" their last input and output in order to make backpropagation easier.
+Define the activation functions `Relu` and `Tanh`. The activation functions "remember" their last input and output in order to make backpropagation easier.
+ The`backward` function receives as input a tensor and return a Hadamard product of this tensor with its derivative.
 
 ### Sequential
 Child of `Module`
