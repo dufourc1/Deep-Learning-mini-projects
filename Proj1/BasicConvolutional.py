@@ -2,6 +2,9 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
+################################################################################
+# Convolutional NN with 3 convolutions and one fully connected layer
+
 class BasicConvolutional(nn.Module):
     def __init__(self, nb_channels_list, kernel_size_list, activation_fc, linear_channels):
         super(BasicConvolutional, self).__init__()
@@ -24,6 +27,9 @@ class BasicConvolutional(nn.Module):
         y = self.activation(self.conv3(y))
         y = y.view(y.size(0), -1)
         return self.activation(self.linear(y))
+
+################################################################################
+# Convolutional NN with 3 convolutions and one fully connected layer and batch normalization
 
 class BasicConvolutionalBN(nn.Module):
     def __init__(self, nb_channels_list, kernel_size_list, activation_fc, linear_channels):
@@ -51,6 +57,9 @@ class BasicConvolutionalBN(nn.Module):
         y = y.view(y.size(0), -1)
         return self.activation(self.linear(y))
 
+################################################################################
+# Fully Convolutional NN with 4 convolutions
+
 class BasicFullyConvolutional(nn.Module):
     def __init__(self, nb_channels_list, kernel_size_list, activation_fc):
         super(BasicFullyConvolutional, self).__init__()
@@ -74,6 +83,9 @@ class BasicFullyConvolutional(nn.Module):
         y = self.activation(self.conv3(y))
         y = self.activation(self.conv_final(y))
         return y.view(y.size(0), -1)
+
+################################################################################
+# Fully Convolutional NN with 4 convolutions and batch normalization
 
 class BasicFullyConvolutionalBN(nn.Module):
     def __init__(self, nb_channels_list, kernel_size_list, activation_fc):

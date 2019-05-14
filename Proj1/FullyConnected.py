@@ -2,6 +2,9 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
+################################################################################
+# Single fully connected layer with actiation function
+
 class basic_layer(nn.Module):
     def __init__(self, n_in, n_out, activation_fc=F.relu):
         super(basic_layer, self).__init__()
@@ -10,6 +13,9 @@ class basic_layer(nn.Module):
 
     def forward(self, x):
         return self.activation(self.fc1(x))
+
+################################################################################
+# Fully connected Network
 
 class FullyConnected(nn.Module):
     def __init__(self, nodes_in, nodes_hidden, nodes_out, n_hidden, activation_fc=F.relu):
@@ -25,6 +31,9 @@ class FullyConnected(nn.Module):
         x = x.view(x.size(0), -1)
         return self.net(x)
 
+################################################################################
+# Single fully connected layer with dropout and activation function
+
 class layer(nn.Module):
     def __init__(self, n_in, n_out, drop):
         super(layer, self).__init__()
@@ -36,6 +45,8 @@ class layer(nn.Module):
         x = self.dropout(x)
         return x
 
+################################################################################
+# Fully connected layer with dropout and batch normalization and activation function
 
 class layer_with_bn(nn.Module):
     def __init__(self, n_in, n_out, drop):
@@ -50,6 +61,10 @@ class layer_with_bn(nn.Module):
         return x
 
 # no dropout if drop = 0.0, a good value to try can be 0.5, 0.25
+
+################################################################################
+# Fully connected network with (optional) dropout and optional batch normalization
+
 class DropoutFullyConnected(nn.Module):
     def __init__(self, nodes_in, nodes_hidden, nodes_out, n_hidden, drop = 0.0, with_batchnorm = False):
         super(Net2, self).__init__()

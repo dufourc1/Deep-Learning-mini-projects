@@ -2,6 +2,9 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
+################################################################################
+# Convolutional network to be used as a block in a Residual net
+
 class ResBlock(nn.Module):
     def __init__(self, nb_channels, kernel_size):
         super(ResBlock, self).__init__()
@@ -17,6 +20,9 @@ class ResBlock(nn.Module):
         y += x
         y = F.relu(y)
         return y
+
+################################################################################
+# residual net
 
 class ResNet(nn.Module):
     def __init__(self, nb_channels, kernel_size, nb_blocks, in_channels = 2, out_channels =2):

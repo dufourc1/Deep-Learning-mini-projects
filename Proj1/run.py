@@ -30,6 +30,12 @@ args = parser.parse_args()
 
 def make_FullyConnected(activation_fc= relu):
     """Wrapper of a FCNN constructor.
+
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
+
     Returns
     -------
     FullyConnected
@@ -40,6 +46,12 @@ def make_FullyConnected(activation_fc= relu):
 
 def make_BasicConv(activation_fc= relu):
     """Wrapper of a convolutional net constructor.
+
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
+
     Returns
     -------
     BasicConvolutional
@@ -52,6 +64,12 @@ def make_BasicConv(activation_fc= relu):
 
 def make_BasicConvBN(activation_fc= relu):
     """Wrapper of a convolutional net constructor.
+
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
+
     Returns
     -------
     BasicConvolutionalBN
@@ -64,6 +82,12 @@ def make_BasicConvBN(activation_fc= relu):
 
 def make_BasicFullyConv(activation_fc= relu):
     """Wrapper of a fully convolutional net constructor.
+
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
+
     Returns
     -------
     BasicFullyConvolutional
@@ -76,6 +100,12 @@ def make_BasicFullyConv(activation_fc= relu):
 
 def make_BasicFullyConvBN(activation_fc= relu):
     """Wrapper of a fully convolutional net constructor.
+
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
+
     Returns
     -------
     BasicFullyConvolutional
@@ -83,30 +113,70 @@ def make_BasicFullyConvBN(activation_fc= relu):
 
     """
     return BasicFullyConvolutionalBN(nb_channels_list= [2, 8, 16, 16],
-        kernel_size_list= [3, 5, 5, 4],
-        activation_fc=activation_fc)
+                    kernel_size_list= [3, 5, 5, 4],
+                    activation_fc= activation_fc)
 
-def make_DropoutFullyConnected(**kwargs):
-    """Wrapper of a fully convolutional net constructor.
+def make_DropoutFullyConnected(*args,**kwargs):
+    """Wrapper of a Fully Connected net with dropout constructor.
+
     Returns
     -------
-    BasicFullyConvolutional
-        A three layer convolutional network with a final fully connected layer.
+    DropoutFullyConnected
+        A fully connected nural network.
 
     """
     dropout = 0.25
     return DropoutFullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout)
 
-def make_DropoutFullyConnectedBatchNorm(**kwargs):
+def make_DropoutFullyConnectedBatchNorm(*args,**kwargs):
+    """Wrapper of a Fully Connected net with dropout constructor and batch normalization\.
+
+    Returns
+    -------
+    DropoutFullyConnected
+        A fully connected nural network.
+
+    """
     dropout = 0.25
     return DropoutFullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
 
-def make_ResNet(**kwargs):
+def make_ResNet(*args,**kwargs):
+    """Wrapper of a Residual Network constructor.
+
+    Returns
+    -------
+    ResNet
+        A residual notwork.
+
+    """
     return ResNet(nb_channels=27, kernel_size=5, nb_blocks=7)
 
-def make_SiameseResNet(**kwargs):
+def make_SiameseNet(*args,**kwargs):
+    """Wrapper of a Siames Network constructor. The two siamese network have\
+two convolutional and two fully connected layers.
+
+    Returns
+    -------
+    SiameseNet
+        A siamese network.
+
+    """
+    return SiameseNet()
+
+
+def make_SiameseResNet(*args,**kwargs):
+    """Wrapper of a Siames Network constructor. The two siamese network are residual.
+
+    Returns
+    -------
+    SiameseNet
+        A siamese network.
+
+    """
     return SiameseNet(branch = ResNet(nb_channels=12, kernel_size=5, nb_blocks=3, in_channels = 1, out_channels = 10))
 
+################################################################################
+# The following dictionaries are used to parse the arguments and define model-specific Parameters
 
 model_makers = {'all': None,
             # 'NoModel': no_model,
@@ -114,11 +184,11 @@ model_makers = {'all': None,
             'basicconv': make_BasicConv,
             'basicconvbn': make_BasicConvBN,
             'basicfullyconv': make_BasicFullyConv,
-            'basicfullyconvbn': BasicFullyConvolutionalBN,
+            'basicfullyconvbn': make_BasicFullyConvBN,
             'dropoutfc': make_DropoutFullyConnected,
             'dropoutfcbn': make_DropoutFullyConnectedBatchNorm,
             'resnet': make_ResNet,
-            'siamese': SiameseNet,
+            'siamese': make_SiameseNet,
             'siameseresnet': make_SiameseResNet}
 
 model_lrs = {'all': None,
@@ -126,8 +196,8 @@ model_lrs = {'all': None,
             'fcnn': 1e-3,
             'basicconv': 4e-4, #2e-4
             'basicconvbn': 4e-4,
-            'basicfullyconv': 7e-4,
-            'basicfullyconvbn': 7e-4,
+            'basicfullyconv': 4e-4,
+            'basicfullyconvbn': 4e-4,
             'dropoutfc': 2e-4,
             'dropoutfcbn': 2e-4,
             'resnet': 1e-3,
@@ -139,14 +209,16 @@ activation_fcs = {'relu': relu,
             'tanh': tanh}
 
 model_infos = {'dropoutfcbn': 'BatchNorm',
-                'basicconvbn': 'BatchNorm',
-                'basicfullyconvbn': 'BatchNorm',
                 'siameseresnet': 'ResNet'}
 
 def run_all(output = None):
-    n_trials = 10
-    # output = 'results.csv'
-    # # output = None
+    """Function that tests all models and outputs results on given support.
+
+    Parameters
+    ----------
+    output : str
+        The name of the file where to store the results. If default it prints onscreen (the default is None).
+    """
 
     if output is not None:
         with open(output, 'w') as f:
@@ -156,41 +228,44 @@ def run_all(output = None):
              'meanAccuracy_te', 'stdAccuracy_tr',
              'meanTime_tr', 'stdTime_tr')) + '\n')
 
-    del model_makers['all']
-    del model_makers['NoModel']
+    del model_makers['all'] #I delete from the dictionary the keywords that do not give "proper models"
 
     activation_fc = activation_fcs['relu']
 
-    for _, model_maker in model_makers.items():
-        infos = model_infos.get(_, '')
-        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[_], infos= infos)
-        if _.find('siamese') >= 0:
-            test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[_], infos= infos, auxiliary= True)
+    for model, model_maker in model_makers.items():
+        n_trials = 15 if (model.find('siamese') < 0 and model.find('resnet') < 0) else 10
 
-    del model_makers['resnet']
+        infos = model_infos.get(model, '')
+        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos)
+        if model.find('siamese') >= 0:
+            test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos, auxiliary= True)
+
+    del model_makers['resnet']  #I do not test heavy models with activation fcts differetn from relu
     del model_makers['siamese']
     del model_makers['siameseresnet']
 
     activation_fc = activation_fcs['tanh']
 
-    for _, model_maker in model_makers.items():
-        infos = model_infos.get(_, '')
-        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[_], infos= infos)
-        if _.find('siamese') >= 0:
-            test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[_], infos= infos, auxiliary= True)
-
+    for model, model_maker in model_makers.items():
+        infos = model_infos.get(model, '')
+        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos + 'tanh')
 
     exit()
 
-model_makers['all'] = lambda : run_all(output = args.output)
+model_makers['all'] = lambda : run_all(output = args.output) #this add to the model parser the option to run everything
 ################################################################################
-
+# The main body of the run is below
 
 if model_makers.get(args.model) is None:
     print("Invalid model")
     exit(1)
 
-n_trials = 7
+#first is the case where we run all models
+if args.model == 'all':
+    model_makers[args.model]()
+
+#here we test only one model
+n_trials = 15 if (args.model.find('siamese') < 0 and args.model.find('resnet') < 0) else 10
 model_maker = model_makers.get(args.model)
 infos = model_infos.get(args.model, '')
 activation_fc = activation_fcs.get(args.activation_fc)

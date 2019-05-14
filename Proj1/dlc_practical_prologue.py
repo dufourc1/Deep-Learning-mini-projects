@@ -9,7 +9,7 @@ import os
 
 parser = argparse.ArgumentParser(description='DLC prologue file for practical sessions.')
 
-#William's fix to parse somewhere else too
+#William's fix to parse arguments for run.py
 parser.add_argument('-m', '--model', type=str, default=None,
                     help = "I'm just here because I have to.")
 
@@ -19,6 +19,7 @@ parser.add_argument('-o', '--output', type=str, default=None,
 parser.add_argument('-a', '--activation_fc', type=str, default=None,
                     help = 'The activation dunction to use in the net. (default: relu)')
 
+#original parser
 parser.add_argument('--full',
                     action='store_true', default=False,
                     help = 'Use the full set, can take ages (default False)')
