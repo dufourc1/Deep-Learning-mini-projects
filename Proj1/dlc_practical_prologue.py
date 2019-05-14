@@ -16,6 +16,8 @@ parser.add_argument('-m', '--model', type=str, default=None,
 parser.add_argument('-o', '--output', type=str, default=None,
                     help = 'The output file where to save the results. If deafults print results on screen.')
 
+parser.add_argument('-a', '--activation_fc', type=str, default=None,
+                    help = 'The activation dunction to use in the net. (default: relu)')
 
 parser.add_argument('--full',
                     action='store_true', default=False,

@@ -3,19 +3,23 @@ import torch.nn.functional as F
 import torch.nn as nn
 
 class basic_layer(nn.Module):
-    def __init__(self, n_in, n_out):
+    def __init__(self, n_in, n_out, activation_fc=F.relu):
         super(basic_layer, self).__init__()
         self.fc1 = nn.Linear(n_in, n_out)
+        self.activation = activation_fc
 
     def forward(self, x):
-        return F.relu(self.fc1(x))
+        return self.activation(self.fc1(x))
 
 class FullyConnected(nn.Module):
-    def __init__(self, nodes_in, nodes_hidden, nodes_out, n_hidden):
+    def __init__(self, nodes_in, nodes_hidden, nodes_out, n_hidden, activation_fc=F.relu):
         super(FullyConnected, self).__init__()
+        self.activation = nn.Tanh if activation_fc == F.tanh else\
+                            nn.LeakyReLU if activation_fc == F.leaky_relu else\
+                            nn.ReLU
         self.net = nn.Sequential(nn.Linear(nodes_in, nodes_hidden),
-                                 nn.ReLU(),
-                                 *(basic_layer(nodes_hidden, nodes_hidden) for _ in  range(n_hidden-1)),
+                                 self.activation(),
+                                 *(basic_layer(nodes_hidden, nodes_hidden, activation_fc) for _ in  range(n_hidden-1)),
                                  nn.Linear(nodes_hidden, nodes_out))
     def forward(self, x):
         x = x.view(x.size(0), -1)

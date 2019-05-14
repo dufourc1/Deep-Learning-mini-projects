@@ -1,4 +1,5 @@
 import torch
+from torch.nn.functional import relu
 
 from dlc_practical_prologue import generate_pair_sets
 from SiameseNet import split_channels
@@ -23,7 +24,7 @@ def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, model_name='N
          torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item()))
     print('\n')
 
-def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=75, batch_size =250, infos='', auxiliary= False):
+def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=75, batch_size =250, infos='', auxiliary= False):
 
     if device is None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,7 +37,7 @@ def test(model_maker, mean=True, n_trials = 5, device=None, output_file= None, l
     Accuracy_tr = []
     Accuracy_te = []
 
-    model = model_maker()
+    model = model_maker(activation_fc)
     model_name = type(model).__name__ + infos
 
     if type(model).__name__ == 'SiameseNet' and auxiliary:
