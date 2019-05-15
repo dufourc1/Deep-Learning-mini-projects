@@ -1,4 +1,4 @@
-ModelName,meanCELoss_tr,stdCELoss_tr,meanCELoss_te,stdCELoss_te,meanAccuracy_tr,stdAccuracy_tr,meanAccuracy_te,stdAccuracy_tr,meanTime_tr,stdTime_tr
+ModelName,meanCELoss_tr,stdCELoss_tr,meanCELoss_te,stdCELoss_te,meanAccuracy_tr,stdAccuracy_tr,meanAccuracy_te,stdAccuracy_te,meanTime_tr,stdTime_tr
 FullyConnected,9.99e-06,5.962e-06,1.402,0.2098,1.0,0.0,0.8065,0.0122,1.243,0.04788
 BasicConvolutional,0.4809,0.2607,0.7368,0.08326,0.6534,0.2579,0.5723,0.1589,1.203,0.04871
 BasicConvolutionalBN,0.01027,0.00117,0.5661,0.04331,0.9997,0.0007037,0.7944,0.00997,1.723,0.04192
