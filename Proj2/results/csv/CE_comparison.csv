@@ -1,0 +1,5 @@
+ModelName,meanCELoss_tr,stdCELoss_tr,meanCELoss_te,stdCELoss_te,meanAccuracy_tr,stdAccuracy_tr,meanAccuracy_te,stdAccuracy_tr
+relu CE,0.3578,0.1068,0.06505,0.05169,98.35,1.236,97.61,1.371
+relu nn CE,0.3717,0.08768,0.05693,0.03574,98.47,1.2,97.65,1.277
+relu CE with momentum,0.3221,0.09966,0.05463,0.02402,98.34,0.987,97.66,0.9355
+relu nn CE with momentum,0.359,0.1395,0.0537,0.02285,98.46,0.8647,97.74,0.8823
