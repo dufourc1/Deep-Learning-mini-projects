@@ -29,15 +29,12 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.conv0 = nn.Conv2d(in_channels, nb_channels, kernel_size = 1)
         self.resblocks = nn.Sequential(*(ResBlock(nb_channels, kernel_size) for _ in range(nb_blocks)))
-        self.resblocks2 = nn.Sequential(*(ResBlock(nb_channels, kernel_size) for _ in range(nb_blocks)))
         self.avg = nn.AvgPool2d(kernel_size = 14)
         self.fc = nn.Linear(nb_channels, out_channels)
 
     def forward(self, x):
         x = F.relu(self.conv0(x))
         x = self.resblocks(x)
-        x = F.relu(x)
-        x = self.resblocks2(x)
         x = F.relu(self.avg(x))
         x = x.view(x.size(0), -1)
         x = self.fc(x)

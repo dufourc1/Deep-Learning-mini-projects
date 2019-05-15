@@ -149,7 +149,7 @@ def make_ResNet(*args,**kwargs):
         A residual notwork.
 
     """
-    return ResNet(nb_channels=12, kernel_size=5, nb_blocks=3)
+    return ResNet(nb_channels=12, kernel_size=5, nb_blocks=6)
 
 def make_SiameseNet(*args,**kwargs):
     """Wrapper of a Siames Network constructor. The two siamese network have\
@@ -173,7 +173,7 @@ def make_SiameseResNet(*args,**kwargs):
         A siamese network.
 
     """
-    return SiameseNet(branch = ResNet(nb_channels=12, kernel_size=5, nb_blocks=3, in_channels = 1, out_channels = 10))
+    return SiameseNet(branch = ResNet(nb_channels=12, kernel_size=5, nb_blocks=6, in_channels = 1, out_channels = 10))
 
 ################################################################################
 # The following dictionaries are used to parse the arguments and define model-specific Parameters
