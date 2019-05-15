@@ -39,7 +39,7 @@ def make_FullyConnected(activation_fc= relu):
     Returns
     -------
     FullyConnected
-        A fully connected nural network.
+        A fully connected neural network.
 
     """
     return FullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, activation_fc=activation_fc)
@@ -149,7 +149,7 @@ def make_ResNet(*args,**kwargs):
         A residual notwork.
 
     """
-    return ResNet(nb_channels=27, kernel_size=5, nb_blocks=7)
+    return ResNet(nb_channels=12, kernel_size=5, nb_blocks=3)
 
 def make_SiameseNet(*args,**kwargs):
     """Wrapper of a Siames Network constructor. The two siamese network have\
@@ -200,7 +200,7 @@ model_lrs = {'all': None,
             'basicfullyconvbn': 4e-4,
             'dropoutfc': 2e-4,
             'dropoutfcbn': 2e-4,
-            'resnet': 1e-3,
+            'resnet': 5e-3,
             'siamese': 5e-3,
             'siameseresnet': 5e-3}
 
