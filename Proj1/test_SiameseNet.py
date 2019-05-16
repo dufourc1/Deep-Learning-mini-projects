@@ -36,7 +36,7 @@ def test(input_train, target_train, classes_train, input_test, target_test, clas
     input_train, target_train, classes_train = input_train.to(device), target_train.to(device), classes_train.to(device)
     input_test, target_test, classes_test = input_test.to(device), target_test.to(device), classes_test.to(device)
 
-    acc_train, acc_test = model.train(input_train, target_train, train_classes = classes_train, auxiliary = True, verbose = verbose,\
+    acc_train, acc_test = model.Train(input_train, target_train, train_classes = classes_train, auxiliary = True, verbose = verbose,\
                 nb_epochs = epochs, batch_size= batch_size, device=device,evolution = True, test_input = input_test, test_target = target_test)
 
 
@@ -56,7 +56,7 @@ def test(input_train, target_train, classes_train, input_test, target_test, clas
 
     model = model.to(device)
 
-    acc_train, acc_test = model.train(input_train, target_train, train_classes = classes_train, auxiliary = False, verbose = verbose,\
+    acc_train, acc_test = model.Train(input_train, target_train, train_classes = classes_train, auxiliary = False, verbose = verbose,\
                 nb_epochs = epochs, batch_size= batch_size, device=device,evolution = True, test_input = input_test, test_target = target_test)
 
     plt.figure()
@@ -88,4 +88,4 @@ if __name__ == '__main__':
     test(input_train, target_train, classes_train,\
         input_test, target_test, classes_test, SimpleNet, "SimpleNet branch", epochs = epochs, verbose = False, device=device)
     test(input_train, target_train, classes_train,\
-        input_test, target_test, classes_test, ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1], device=device)
+        input_test, target_test, classes_test, ResNet, "ResNet branch", epochs = epochs, verbose = False,args= [12,5,3,1, 10], device=device)
