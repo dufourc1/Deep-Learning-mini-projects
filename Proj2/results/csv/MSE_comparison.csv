@@ -1,0 +1,5 @@
+ModelName,meanMSELoss_tr,stdMSELoss_tr,meanMSELoss_te,stdMSELoss_te,meanAccuracy_tr,stdAccuracy_tr,meanAccuracy_te,stdAccuracy_tr
+relu MSE,0.2308,0.08412,0.02694,0.008067,98.6,0.5125,97.63,0.7699
+relu nn MSE,0.2098,0.07175,0.02619,0.008211,98.41,0.721,97.66,1.24
+relu MSE with momentum,0.1987,0.0895,0.02319,0.009978,98.71,0.5934,97.95,0.7445
+relu nn MSE with momentum,0.1631,0.05099,0.02085,0.005921,98.25,0.7964,97.46,0.9489
