@@ -46,7 +46,7 @@ def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, time_tr, mode
          torch.tensor(time_tr).mean().item(), torch.tensor(time_tr).std().item()))
     print('\n')
 
-def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=50, batch_size =100, infos='', auxiliary= False):
+def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=50, batch_size =250, infos='', auxiliary= False):
     """Function that test multiple times a given network on MNIST and save the results.
 
     Parameters
@@ -160,9 +160,12 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
 
         ########################################################################
         # model evaluation
-        
+
         with torch.no_grad():
             elapsed_time = time.time() - start_time
+
+            model.train(False)
+            
             this_CELoss_tr = criterion(model(input_train),target_train).item()
             this_CELoss_te = criterion(model(input_test),target_test).item()
             this_Accuracy_tr = nn_accuracy_score(model, input_train, target_train)
