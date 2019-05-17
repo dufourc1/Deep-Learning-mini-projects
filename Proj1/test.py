@@ -1,187 +1,291 @@
-import time
+from sys import exit
+import argparse
+
 import torch
-from torch.nn.functional import relu
+from torch.nn.functional import relu, leaky_relu, tanh
 
-from dlc_practical_prologue import generate_pair_sets
-from SiameseNet import split_channels
+from test_helpers import test
 
-def nn_accuracy_score(model, X, y):
-    with torch.no_grad():
-        return (model(X).argmax(dim=1) == y).sum().item() / len(y)
-
-def score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, time_tr, model_name='Network', output= None):
-    """Printing funtion for the test results.
-
-    Parameters
-    ----------
-    CELoss_tr : iterable
-        List of cross entropy scores on train set.
-    CELoss_te : iterable
-        List of cross entropy scores on test set.
-    Accuracy_tr : iterable
-        List of accuracy scores on train set.
-    Accuracy_te : iterable
-        List of accuracy scores on test set.
-    time_tr : iterable
-        List of training times in seconds.
-    model_name : str
-        Name of the network that gave the results above (the default is 'Network').
-    output : str
-        Name of the file where to save the results. If empty it prints on screen (the default is None).
-    """
-    if output is None: #print onscreen
-        print('\n\
-    Cross Entropy Loss on TRAIN :\t{:.4}'.format(torch.tensor(CELoss_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_tr).std().item()), '\n\
-    Cross Entropy Loss on TEST :\t{:.4}'.format(torch.tensor(CELoss_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(CELoss_te).std().item()), '\n\
-    Accuracy score on TRAIN :\t\t{:.4}'.format(torch.tensor(Accuracy_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_tr).std().item()), '\n\
-    Accuracy score on TEST :\t\t{:.4}'.format(torch.tensor(Accuracy_te).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(Accuracy_te).std().item()), '\n\
-    Training time (s):\t\t\t{:.4}'.format(torch.tensor(time_tr).mean().item()), u"\u00B1", '{:.4}'.format(torch.tensor(time_tr).std().item()))
-        return
-
-    with open(output, 'a') as f: #print on file
-        f.write('{},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4},{:.4}\n'.format(model_name, torch.tensor(CELoss_tr).mean().item(), torch.tensor(CELoss_tr).std().item(),
-         torch.tensor(CELoss_te).mean().item(), torch.tensor(CELoss_te).std().item(),
-         torch.tensor(Accuracy_tr).mean().item(), torch.tensor(Accuracy_tr).std().item(),
-         torch.tensor(Accuracy_te).mean().item(), torch.tensor(Accuracy_te).std().item(),
-         torch.tensor(time_tr).mean().item(), torch.tensor(time_tr).std().item()))
-    print('\n')
-
-def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None, output_file= None, lr =10e-3, nb_epochs=50, batch_size =250, infos='', auxiliary= False):
-    """Function that test multiple times a given network on MNIST and save the results.
-
-    Parameters
-    ----------
-    model_maker : function
-        A function that returns a torch.nn.Module. This function should be able to accept arguments, even if not used.
-    activation_fc : torch.nn.functional
-        Activation function to be passed in model_maker (the default is relu).
-    mean : bool
-        If to compute the mean over multiple trials (the default is True).
-    n_trials : int
-        Number of times the model is to be tested, ignored if mean is False (the default is 5).
-    device : torch.device
-        The device to be used, by default is chosen according to computer resources (the default is None).
-    output_file : str
-        Name of the file where to save the results. If empty it prints on screen (the default is None).
-    lr : double
-        Learning rate (the default is 10e-3).
-    nb_epochs : int
-        Number of epochs (the default is 50).
-    batch_size : int
-        Batch size (the default is 100).
-    infos : str
-        Additional model infromations to be printed (the default is '').
-    auxiliary : bool
-        Wether to use auxiliary loss, it works only for siames net (the default is False).
-    """
-
-    if device is None:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    if not mean:
-        n_trials = 1
-
-    CELoss_tr = []
-    CELoss_te = []
-    Accuracy_tr = []
-    Accuracy_te = []
-    time_tr = []
-
-    model = model_maker(activation_fc)
-    model_name = type(model).__name__ + infos
-
-    if type(model).__name__ == 'SiameseNet' and auxiliary:
-        model_name += 'Auxiliary'
-
-    print('Training {}:'.format(model_name))
+from FullyConnected import FullyConnected, DropoutFullyConnected
+from BasicConvolutional import BasicConvolutional, BasicFullyConvolutional,\
+                                BasicConvolutionalBN, BasicFullyConvolutionalBN
+from ResNet import ResNet
+from SiameseNet import SiameseNet
 
 ################################################################################
-# The model testing follows
+parser = argparse.ArgumentParser(description='Reproduction of our results for Project 1')
 
-    for trial in range(n_trials):
-        input_train, target_train, classes_train, input_test, target_test, classes_test = generate_pair_sets(1000)
+parser.add_argument('-m', '--model', type=str, default='all',
+                    help = 'The model to be tested.')
 
-        criterion = torch.nn.CrossEntropyLoss()
+parser.add_argument('-o', '--output', type=str, default=None,
+                    help = 'The output file where to save the results. If deafults print results on screen.')
 
-        model = model_maker().to(device)
+parser.add_argument('-a', '--activation_fc', type=str, default='relu',
+                    help = 'The activation dunction to use in the net. (default: relu)')
 
-        criterion = criterion.to(device)
+args = parser.parse_args()
 
-        optimizer = torch.optim.Adam(model.parameters(),lr)
+################################################################################
 
-        input_train, target_train = input_train.to(device), target_train.to(device)
-        input_test, target_test = input_test.to(device), target_test.to(device)
-        if auxiliary:
-            classes_train, classes_test = classes_train.to(device), classes_test.to(device)
+def make_FullyConnected(activation_fc= relu):
+    """Wrapper of a FCNN constructor.
 
-        ########################################################################
-        #A model is trained for each trial
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
 
-        start_time = time.time()
+    Returns
+    -------
+    FullyConnected
+        A fully connected neural network.
 
-        for e in range(nb_epochs):
-            for input, targets in zip(input_train.split(batch_size), target_train.split(batch_size)):
+    """
+    return FullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, activation_fc=activation_fc)
 
-                if type(model).__name__ != 'SiameseNet' or not auxiliary:
-                    #the standart training
-                    optimizer.zero_grad()
-                    output = model(input)
-                    loss = criterion(output, targets)
-                    loss.backward()
-                    optimizer.step()
-                else:
-                    #first pass
-                    #separating the data so that we train on the two images separatly, and learn to classify them properly
-                    input_train1,classes_train1,input_train2,classes_train2 = split_channels(input_train, classes_train)
+def make_BasicConv(activation_fc= relu):
+    """Wrapper of a convolutional net constructor.
 
-                    #use the branch to perform handwritten digits classification
-                    out1 = model.branch(input_train1)
-                    out2 = model.branch(input_train2)
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
 
-                    #auxiliary loss: learn to detect the handwritten digits directly
-                    loss_aux = criterion(out1,classes_train1) + criterion(out2,classes_train2)
+    Returns
+    -------
+    BasicConvolutional
+        A three layer convolutional network with a final fully connected layer.
 
-                    #optimize based on this
-                    model.zero_grad()
-                    loss_aux.backward(retain_graph=True)
-                    optimizer.step()
+    """
+    return BasicConvolutional(nb_channels_list= [2, 8, 16, 16],
+        kernel_size_list= [3, 5, 5],
+        activation_fc=activation_fc, linear_channels=4**2*16)
 
-                    #second pass
-                    #loss and optimization of the whole model
-                    response = model.forward(input_train)
-                    loss = criterion(response,target_train)
-                    model.zero_grad()
-                    loss.backward()
-                    optimizer.step()
+def make_BasicConvBN(activation_fc= relu):
+    """Wrapper of a convolutional net constructor.
 
-            with torch.no_grad():
-                print('{:3}%| Trial {:>2}/{} - Iteration #{:>3}/{}:\t'.format(int((trial*nb_epochs + e+1)/n_trials/nb_epochs*100), trial+1, n_trials, e+1, nb_epochs),
-                'Cross Entropy Loss on TRAIN :\t{:11.5}'.format(criterion(model(input_train),target_train).item()), end='\r')
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
 
-        ########################################################################
-        # model evaluation
+    Returns
+    -------
+    BasicConvolutionalBN
+        A three layer convolutional network with batch normalization with a final fully connected layer.
 
-        with torch.no_grad():
-            elapsed_time = time.time() - start_time
+    """
+    return BasicConvolutionalBN(nb_channels_list= [2, 8, 16, 16],
+        kernel_size_list= [3, 5, 5],
+        activation_fc=activation_fc, linear_channels=4**2*16)
 
-            model.train(False)
+def make_BasicFullyConv(activation_fc= relu):
+    """Wrapper of a fully convolutional net constructor.
 
-            this_CELoss_tr = criterion(model(input_train),target_train).item()
-            this_CELoss_te = criterion(model(input_test),target_test).item()
-            this_Accuracy_tr = nn_accuracy_score(model, input_train, target_train)
-            this_Accuracy_te =  nn_accuracy_score(model, input_test, target_test)
-            if not mean:
-                print('Cross Entropy Loss on TRAIN :\t', this_CELoss_tr,'\n\
-                Cross Entropy Loss on TEST :\t', this_CELoss_te,'\n\
-                Accuracy score on TRAIN :\t', this_Accuracy_tr,'\n\
-                Accuracy score on TEST :\t', this_Accuracy_te)
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
 
-            CELoss_tr.append(this_CELoss_tr)
-            CELoss_te.append(this_CELoss_te)
-            Accuracy_tr.append(this_Accuracy_tr)
-            Accuracy_te.append(this_Accuracy_te)
-            time_tr.append(elapsed_time)
+    Returns
+    -------
+    BasicFullyConvolutional
+        A three layer convolutional network with a final fully connected layer.
 
-    with torch.no_grad():
-        score_printing(CELoss_tr, CELoss_te, Accuracy_tr, Accuracy_te, time_tr, model_name = model_name, output = output_file)
-    return
+    """
+    return BasicFullyConvolutional(nb_channels_list= [2, 8, 16, 16],
+        kernel_size_list= [3, 5, 5, 4],
+        activation_fc=activation_fc)
+
+def make_BasicFullyConvBN(activation_fc= relu):
+    """Wrapper of a fully convolutional net constructor.
+
+    Parameters
+    ----------
+    activation_fc : function
+        The activation function to use in the model (the default is relu).
+
+    Returns
+    -------
+    BasicFullyConvolutional
+        A four layer fully convolutional network with batch-normalization.
+
+    """
+    return BasicFullyConvolutionalBN(nb_channels_list= [2, 8, 16, 16],
+                    kernel_size_list= [3, 5, 5, 4],
+                    activation_fc= activation_fc)
+
+def make_DropoutFullyConnected(*args,**kwargs):
+    """Wrapper of a Fully Connected net with dropout constructor.
+
+    Returns
+    -------
+    DropoutFullyConnected
+        A fully connected nural network.
+
+    """
+    dropout = 0.25
+    return DropoutFullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout)
+
+def make_DropoutFullyConnectedBatchNorm(*args,**kwargs):
+    """Wrapper of a Fully Connected net with dropout constructor and batch normalization\.
+
+    Returns
+    -------
+    DropoutFullyConnected
+        A fully connected nural network.
+
+    """
+    dropout = 0.25
+    return DropoutFullyConnected(nodes_in=2*14**2, nodes_hidden=1000, nodes_out=2, n_hidden=2, drop = dropout, with_batchnorm = True)
+
+def make_ResNet(*args,**kwargs):
+    """Wrapper of a Residual Network constructor.
+
+    Returns
+    -------
+    ResNet
+        A residual notwork.
+
+    """
+    return ResNet(nb_channels=12, kernel_size=5, nb_blocks=6)
+
+def make_SiameseNet(*args,**kwargs):
+    """Wrapper of a Siames Network constructor. The two siamese network have\
+two convolutional and two fully connected layers.
+
+    Returns
+    -------
+    SiameseNet
+        A siamese network.
+
+    """
+    return SiameseNet()
+
+
+def make_SiameseResNet(*args,**kwargs):
+    """Wrapper of a Siames Network constructor. The two siamese network are residual.
+
+    Returns
+    -------
+    SiameseNet
+        A siamese network.
+
+    """
+    return SiameseNet(branch = ResNet(nb_channels=12, kernel_size=5, nb_blocks=6, in_channels = 1, out_channels = 10))
+
+################################################################################
+# The following dictionaries are used to parse the arguments and define model-specific Parameters
+
+model_makers = {'all': None,
+            # 'NoModel': no_model,
+            'fcnn': make_FullyConnected,
+            'basicconv': make_BasicConv,
+            'basicconvbn': make_BasicConvBN,
+            'basicfullyconv': make_BasicFullyConv,
+            'basicfullyconvbn': make_BasicFullyConvBN,
+            'dropoutfc': make_DropoutFullyConnected,
+            'dropoutfcbn': make_DropoutFullyConnectedBatchNorm,
+            'resnet': make_ResNet,
+            'siamese': make_SiameseNet,
+            'siameseresnet': make_SiameseResNet}
+
+model_lrs = {'all': None,
+            # 'NoModel': no_model,
+            'fcnn': 1e-3,
+            'basicconv': 4e-4, #2e-4
+            'basicconvbn': 4e-4,
+            'basicfullyconv': 4e-4,
+            'basicfullyconvbn': 4e-4,
+            'dropoutfc': 2e-4,
+            'dropoutfcbn': 2e-4,
+            'resnet': 5e-3,
+            'siamese': 5e-3,
+            'siameseresnet': 5e-3}
+
+activation_fcs = {'relu': relu,
+            'leakyrelu': leaky_relu,
+            'tanh': tanh}
+
+model_infos = {'dropoutfcbn': 'BatchNorm',
+                'siameseresnet': 'ResNet'}
+
+def run_all(output = None):
+    """Function that tests all models and outputs results on given support.
+
+    Parameters
+    ----------
+    output : str
+        The name of the file where to store the results. If default it prints onscreen (the default is None).
+    """
+
+    if output is not None:
+        with open(output, 'w') as f:
+            f.write(','.join(('ModelName', 'meanCELoss_tr', 'stdCELoss_tr',
+             'meanCELoss_te', 'stdCELoss_te',
+             'meanAccuracy_tr', 'stdAccuracy_tr',
+             'meanAccuracy_te', 'stdAccuracy_te',
+             'meanTime_tr', 'stdTime_tr')) + '\n')
+
+    del model_makers['all'] #I delete from the dictionary the keywords that do not give "proper models"
+
+    if not torch.cuda.is_available(): #the following models are very long to train so do not attempt to train them without gpu
+        del model_makers['resnet']
+        del model_makers['siamese']
+        del model_makers['siameseresnet']
+
+    activation_fc = activation_fcs['relu']
+
+    for model, model_maker in model_makers.items():
+        n_trials = 15 if (model.find('siamese') < 0 and model.find('resnet') < 0) else 10
+
+        infos = model_infos.get(model, '')
+        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos)
+        if model.find('siamese') >= 0:
+            test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos, auxiliary= True)
+
+    if torch.cuda.is_available():
+        del model_makers['resnet']  #I do not test heavy models with activation fcts differetn from relu
+        del model_makers['siamese']
+        del model_makers['siameseresnet']
+
+    activation_fc = activation_fcs['tanh']
+
+    for model, model_maker in model_makers.items():
+        n_trials = 15
+        infos = model_infos.get(model, '')
+        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos + 'tanh')
+
+    activation_fc = activation_fcs['leakyrelu']
+
+    for model, model_maker in model_makers.items():
+        n_trials = 15
+        infos = model_infos.get(model, '')
+        test(model_maker, activation_fc, n_trials = n_trials, output_file= output, lr = model_lrs[model], infos= infos + 'LeakyRelu')
+
+    exit()
+
+model_makers['all'] = lambda : run_all(output = args.output) #this add to the model parser the option to run everything
+################################################################################
+# The main body of the run is below
+
+if model_makers.get(args.model) is None:
+    print("Invalid model")
+    exit(1)
+
+#first is the case where we run all models
+if args.model == 'all':
+    model_makers[args.model]()
+
+#here we test only one model
+n_trials = 15 if (args.model.find('siamese') < 0 and args.model.find('resnet') < 0) else 10
+model_maker = model_makers.get(args.model)
+infos = model_infos.get(args.model, '')
+activation_fc = activation_fcs.get(args.activation_fc)
+
+test(model_maker, activation_fc= activation_fc, n_trials =n_trials, lr= model_lrs[args.model],
+                infos= infos + args.activation_fc, output_file= args.output)
+if args.model.find('siamese') >= 0:
+    test(model_maker, n_trials = n_trials, lr = model_lrs[args.model],
+            infos= infos, auxiliary= True, output_file= args.output)
