@@ -4,7 +4,7 @@ Second project for the course of Deep Learning EE559
 
 The purpose of this project was to write a mini deep learning framework from scratch withouth using `autograd`
 ## Libraries used
-We used the following libraries for this project, with Python 3.6.5
+We used the following libraries for this project, with Python 3.6.8
 
 
  Computational:

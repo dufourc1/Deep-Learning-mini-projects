@@ -1,4 +1,4 @@
-# Deep learning architecture benchmark on MNIST images 
+# Deep learning architecture benchmark on MNIST images
 ###### deep learning first miniproject
 
 
@@ -44,18 +44,18 @@ The folder structure has to be the following:
     ├── plots/
     └─ *.csv
 ├─ test.py                            # Along with all the models *.py
-├─ run.py
+├─ test_helpers.py
 ├─ Report.pdf
 └─ README.md
 ```
 
 ## Executables
 
-### run.py
+### test.py
 
 This is the main script. It run 15 experiments (10 if the architecture is complex) over the models and prints (or save) the results. It can be executed without arguments
 ```
-usage: run.py [-h] [-m MODEL] [-o OUTPUT] [-a ACTIVATION_FC]
+usage: test.py [-h] [-m MODEL] [-o OUTPUT] [-a ACTIVATION_FC]
 
 Reproduction of our results for Project 1
 
@@ -70,7 +70,7 @@ optional arguments:
                         The activation dunction to use in the net. (default:
                         relu)
 ```
-There are several model strings to use as parameter for `run.py`, by default it experiment with each of them if a GPU is available, otherwise it avoids the most complex models, identified with a `+` in the following table. Each of them can also be tested singularly by calling `run.py -m MODEL`.
+There are several model strings to use as parameter for `test.py`, by default it experiment with each of them if a GPU is available, otherwise it avoids the most complex models, identified with a `+` in the following table. Each of them can also be tested singularly by calling `test.py -m MODEL`.
 
     'all':                Run all the experiment for all models
     'fcnn':               Fully Connected Neural Network
@@ -84,7 +84,7 @@ There are several model strings to use as parameter for `run.py`, by default it 
     'siamese':          + Siamese Network with convolutional sub-network,
     'siameseresnet':    + Siamese Network with Residual sub-network.
 
-For all models except the advanced (`+`) ones, the user can specify which activation function to use. It can be specified by running `run.py -m MODEL -a ACTIVATION_FC`, noting that if a model is not specified then all activation functions are tested on all models. Furthermore, if the model is among the complex ones, then ReLU will be used independently of the user choice. The available activation function strings are:
+For all models except the advanced (`+`) ones, the user can specify which activation function to use. It can be specified by running `test.py -m MODEL -a ACTIVATION_FC`, noting that if a model is not specified then all activation functions are tested on all models. Furthermore, if the model is among the complex ones, then ReLU will be used independently of the user choice. The available activation function strings are:
 
     'relu':       ReLU,
     'leakyrelu':  Leaky ReLU,
@@ -146,7 +146,7 @@ The training with auxiliary losses is as follows, iterating at each epoch:
 
 ## Test files
 
-### test.py
+### test_helpers.py
 
 In this file we implement the general experiment code, i.e the function to train and test the models and the function to print the results.
 
