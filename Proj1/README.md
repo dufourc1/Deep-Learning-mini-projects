@@ -1,4 +1,4 @@
-# MNIST classification with a twist
+# Deep learning architecture benchmark on MNIST images 
 ###### deep learning first miniproject
 
 
