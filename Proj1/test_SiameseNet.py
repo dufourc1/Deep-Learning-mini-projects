@@ -46,7 +46,7 @@ def test(input_train, target_train, classes_train, input_test, target_test, clas
     plt.legend()
     plt.title(name)
     plt.tight_layout()
-    plt.savefig("data/"+name+"_accuracy.pdf")
+    plt.savefig("results/plots/"+name+"_accuracy.pdf")
 
     acc_train_with = accuracy(model,input_train,target_train)
     acc_test_with = accuracy(model,input_test,target_test)
@@ -65,7 +65,7 @@ def test(input_train, target_train, classes_train, input_test, target_test, clas
     plt.legend()
     plt.title(name)
     plt.tight_layout()
-    plt.savefig("data/"+name+"_accuracy_no_auxiliary.pdf")
+    plt.savefig("results/plots/"+name+"_accuracy_no_auxiliary.pdf")
 
     acc_train_withouth = accuracy(model,input_train,target_train)
     acc_test_withouth = accuracy(model,input_test,target_test)
