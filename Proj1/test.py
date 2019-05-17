@@ -165,7 +165,7 @@ def test(model_maker, activation_fc= relu, mean=True, n_trials = 5, device=None,
             elapsed_time = time.time() - start_time
 
             model.train(False)
-            
+
             this_CELoss_tr = criterion(model(input_train),target_train).item()
             this_CELoss_te = criterion(model(input_test),target_test).item()
             this_Accuracy_tr = nn_accuracy_score(model, input_train, target_train)

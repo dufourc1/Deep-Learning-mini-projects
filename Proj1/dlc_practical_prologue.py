@@ -6,12 +6,14 @@ import argparse
 import os
 
 ######################################################################
-
-parser = argparse.ArgumentParser(description='DLC prologue file for practical sessions.')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='DLC prologue file for practical sessions.')
+else :
+    parser = argparse.ArgumentParser(description='Reproduction of our results for Project 1')
 
 #William's fix to parse arguments for run.py
 parser.add_argument('-m', '--model', type=str, default=None,
-                    help = "I'm just here because I have to.")
+                    help = "'The model to be tested.'")
 
 parser.add_argument('-o', '--output', type=str, default=None,
                     help = 'The output file where to save the results. If deafults print results on screen.')
