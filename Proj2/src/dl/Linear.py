@@ -39,8 +39,9 @@ class Linear(Module):
         #we check if we have a single datapoint entry, in which case we do not have to worry about the dimensions
         if len(x.shape)>1:
             self.input.value = x
-            #expand the bias vector so it matches the size of the mini batches
-            B = self.bias.value.repeat(1,self.input.value.t().shape[1]).view(-1,self.bias.value.shape[0]).t()
+            #not needed anymore, shape taken care of, automatic broadcasting will work
+            ## #expand the bias vector so it matches the size of the mini batches
+            ## #B = self.bias.value.repeat(1,self.input.value.t().shape[1]).view(-1,self.bias.value.shape[0]).t()
             #do the actual forward pass
             self.result.value = x.matmul(self.weights.value.t()) + self.bias.value
             #self.result.value = self.result.value.t()
