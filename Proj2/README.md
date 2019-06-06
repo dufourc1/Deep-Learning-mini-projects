@@ -110,7 +110,6 @@ Child of `Module`
 
 Implementation of a simple linear layer with Xavier's initialization. In order to perform backpropagation it should be given as input the derivative with respect to its output.
 ### Optimizer
-Child of `Module`
 
 Define the optimizer `SGD` (stochastic gradient descent) with the momentum option. The inital momentum is initialized at 0.
 
