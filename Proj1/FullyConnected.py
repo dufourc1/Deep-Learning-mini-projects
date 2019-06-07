@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 
 ################################################################################
-# Single fully connected layer with actiation function
+# Single fully connected layer with activation function
 
 class basic_layer(nn.Module):
     def __init__(self, n_in, n_out, activation_fc=F.relu):
